@@ -49,7 +49,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_173250) do
     t.decimal "price"
     t.string "title"
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
     t.index ["client_id"], name: "index_services_on_client_id"
+    t.index ["user_id"], name: "index_services_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -64,4 +66,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_27_173250) do
   add_foreign_key "notes", "clients"
   add_foreign_key "notes", "users"
   add_foreign_key "services", "clients"
+  add_foreign_key "services", "users"
 end
