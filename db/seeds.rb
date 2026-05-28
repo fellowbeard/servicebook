@@ -1,3 +1,11 @@
+# Destroy existing records
+AppointmentService.destroy_all
+Appointment.destroy_all
+Note.destroy_all
+Service.destroy_all
+Client.destroy_all
+User.destroy_all
+
 # Users
 jane = User.create!(
   first_name: "Jane", 
@@ -59,22 +67,53 @@ Service.create!(
 )
 
 # Appointments
-Appointment.create!(
+appointment_one = Appointment.create!(
   client: client_one,
-  service: "Deep Tissue Massage",
   scheduled_at: 2.days.from_now
 )
 
-Appointment.create!(
+appointment_two = Appointment.create!(
   client: client_two,
-  service: "Custom Rug Consultation",
   scheduled_at: 4.days.from_now
 )
 
-Appointment.create!(
+appointment_three = Appointment.create!(
   client: client_three,
-  service: "Follow-up Appointment",
   scheduled_at: 1.week.from_now
+)
+
+# Appointment Services (join records)
+# Appointment 1: Deep Tissue + Custom Rug
+AppointmentService.create!(
+  appointment: appointment_one,
+  service: Service.find_by(title: "Deep Tissue Massage")
+)
+
+AppointmentService.create!(
+  appointment: appointment_one,
+  service: Service.find_by(title: "Custom Rug Consultation")
+)
+
+# Appointment 2: Custom Rug + Follow-up
+AppointmentService.create!(
+  appointment: appointment_two,
+  service: Service.find_by(title: "Custom Rug Consultation")
+)
+
+AppointmentService.create!(
+  appointment: appointment_two,
+  service: Service.find_by(title: "Follow-up Appointment")
+)
+
+# Appointment 3: Follow-up + Deep Tissue
+AppointmentService.create!(
+  appointment: appointment_three,
+  service: Service.find_by(title: "Follow-up Appointment")
+)
+
+AppointmentService.create!(
+  appointment: appointment_three,
+  service: Service.find_by(title: "Deep Tissue Massage")
 )
 
 # Notes

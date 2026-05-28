@@ -3,14 +3,14 @@ class AppointmentsController < ApplicationController
 
   # GET /appointments
   def index
-    @appointments = Appointment.all
+    appointments = Appointment.includes(:services)
 
-    render json: @appointments
+    render json: appointments.map(&:with_services)
   end
 
   # GET /appointments/1
   def show
-    render json: @appointment
+    render json: @appointment.with_services
   end
 
   # POST /appointments
