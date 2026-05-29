@@ -1,8 +1,13 @@
 import './App.css'
 import { Routes, Route, Link } from 'react-router-dom'
+import { useState } from 'react'
+
 import UserDashboard from './components/UserDashboard.jsx'
+import Login from './components/Login.jsx'
 
 function App() {
+  const [currentUser, setCurrentUser] = useState({ id: 5 }) // id hardcoded for testing
+
   return (
     <>
       <nav>
@@ -11,15 +16,25 @@ function App() {
       </nav>
 
       <Routes>
-        <Route path="/" element={<h1>Service Book</h1>} />
+        <Route path="/"
+          element={
+            <Login
+              setCurrentUser={setCurrentUser}
+            />
+          }
+        />
 
         <Route
           path="/userdashboard"
           element={
-            <UserDashboard
-              apiBase="http://localhost:3000/api/v1"
-              userId={5}
-            />
+            currentUser ? (
+              <UserDashboard
+                apiBase="http://localhost:3000/api/v1"
+                userId={currentUser.id}
+              />
+            ) : (
+              <p> LOGIN You dork </p>
+            )
           }
         />
       </Routes>

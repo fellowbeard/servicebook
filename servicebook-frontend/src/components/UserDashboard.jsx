@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export default function UserDashboard( {userId} ) {
+export default function UserDashboard({ userId }) {
   const [dashboard, setDashboard] = useState(null)
 
   useEffect(() => {
