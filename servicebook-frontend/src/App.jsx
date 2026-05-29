@@ -1,13 +1,28 @@
-import { useEffect, useState } from 'react'
 import './App.css'
-import UserDashboard from '/src/components/UserDashboard.jsx'
+import { Routes, Route, Link } from 'react-router-dom'
+import UserDashboard from './components/UserDashboard.jsx'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <h1>Service Book</h1>
+      <nav>
+        <Link to="/">Login</Link> |{' '}
+        <Link to="/userdashboard">Dashboard</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<h1>Service Book</h1>} />
+
+        <Route
+          path="/userdashboard"
+          element={
+            <UserDashboard
+              apiBase="http://localhost:3000/api/v1"
+              userId={5}
+            />
+          }
+        />
+      </Routes>
     </>
   )
 }

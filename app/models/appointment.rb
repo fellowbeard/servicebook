@@ -6,9 +6,14 @@ class Appointment < ApplicationRecord
 
   def with_services
     as_json.merge(
+      scheduled_at: convert_time,
       services: services.as_json(
         only: [:id, :title, :description, :duration_minutes, :price]
       )
     )
+  end
+
+  def convert_time
+    self.scheduled_at.strftime("%A, %B %d, %Y")
   end
 end

@@ -12,7 +12,6 @@ module Api
         render json: @user
       end
 
-      # GET /api/v1/users/:id/dashboard
       def dashboard
         # clients associated via services owned by this user
         clients_scope = Client.joins(:services).where(services: { user_id: @user.id }).distinct
@@ -20,11 +19,19 @@ module Api
 
         render json: {
           user: @user.as_json(only: [:id, :first_name, :last_name, :email]),
-          clients_count: clients_scope.count,
           appointments_count: appointments_scope.count,
           recent_clients: clients_scope.order(created_at: :desc).limit(5).as_json(only: [:id, :first_name, :last_name, :email, :phone]),
-          recent_appointments: appointments_scope.order(scheduled_at: :desc).limit(5).as_json(only: [:id, :scheduled_at, :client_id])
-        }
+          recent_appointments: appointments_scope
+            .order(scheduled_at: :desc)
+            .limit(5)
+            .map do |appointment|
+              {
+                id: appointment.id,
+                client_id: appointment.client_id,
+                scheduled_at: appointment.convert_time
+              }
+            end        
+          }
       end
 
       def create
