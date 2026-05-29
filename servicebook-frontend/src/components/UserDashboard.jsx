@@ -4,7 +4,7 @@ export default function UserDashboard({ userId }) {
   const [dashboard, setDashboard] = useState(null)
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/v1/users/${userId}/dashboard`)
+    fetch(`/api/v1/users/${userId}/dashboard`)
       .then((res) => res.json())
       .then((data) => setDashboard(data))
   }, [userId])

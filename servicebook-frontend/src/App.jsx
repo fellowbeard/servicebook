@@ -29,7 +29,7 @@ function App() {
           element={
             currentUser ? (
               <UserDashboard
-                apiBase="http://localhost:3000/api/v1"
+                apiBase="/api/v1"
                 userId={currentUser.id}
               />
             ) : (
