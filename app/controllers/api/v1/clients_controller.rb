@@ -13,9 +13,7 @@ module Api
       end
 
       def show
-        client = Client.find(params[:id])
-
-        render json: client.as_json(
+        render json: @client.as_json(
           only: [:id, :first_name, :last_name, :email],
           include: {
             services: {
