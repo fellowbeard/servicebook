@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import UserDashboard from './components/UserDashboard.jsx'
 import Login from './components/Login.jsx'
+import ClientCard from './components/ClientCard.jsx'
 
 function App() {
   const [currentUser, setCurrentUser] = useState({ id: 5 }) // id hardcoded for testing
@@ -30,6 +31,10 @@ function App() {
               <p>LOGIN You dork</p>
             )
           }
+        />
+        <Route
+          path="/clients/:id"
+          element={<ClientCard currentUser={currentUser} />}
         />
       </Routes>
     </>
