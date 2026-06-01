@@ -1,13 +1,23 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function UserDashboard({ currentUser }) {
   const [dashboard, setDashboard] = useState(null)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetch(`/api/v1/users/${currentUser.id}/dashboard`)
       .then((res) => res.json())
       .then((data) => setDashboard(data))
-  }, [currentUser])
+  }, [currentUser.id])
+
+  function handleClientSelect(event) {
+    const clientId = event.target.value
+
+    if (clientId) {
+      navigate(`/clients/${clientId}`)
+    }
+  }
 
   if (!dashboard) return <p>Loading...</p>
 
@@ -19,8 +29,6 @@ export default function UserDashboard({ currentUser }) {
         Welcome, {dashboard.user?.first_name} {dashboard.user?.last_name}
       </h2>
 
-      <p>Appointments: {dashboard.appointments_count}</p>
-
       <h3>Recent Clients</h3>
       <div>
         {dashboard.recent_clients?.map((client) => (
@@ -30,12 +38,23 @@ export default function UserDashboard({ currentUser }) {
         ))}
       </div>
 
+      <h3>Find Client</h3>
+      <select defaultValue="" onChange={handleClientSelect}>
+        <option value="" disabled>
+          Select a client
+        </option>
+
+        {dashboard.clients?.map((client) => (
+          <option key={client.id} value={client.id}>
+            {client.first_name} {client.last_name}
+          </option>
+        ))}
+      </select>
+
       <h3>Recent Appointments</h3>
       <div>
         {dashboard.recent_appointments?.map((appointment) => (
-          <div key={appointment.id}>
-            {appointment.scheduled_at}
-          </div>
+          <div key={appointment.id}>{appointment.scheduled_at}</div>
         ))}
       </div>
     </main>
