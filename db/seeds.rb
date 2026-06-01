@@ -1,3 +1,5 @@
+require 'faker'
+
 # Destroy existing records
 AppointmentService.destroy_all
 Appointment.destroy_all
@@ -23,19 +25,22 @@ john = User.create!(
 client_one = Client.create!(
   first_name: "Maya",
   last_name: "Rivera",
-  email: "maya.rivera@example.com"
+  email: "maya.rivera@example.com",
+  phone: Faker::PhoneNumber.phone_number
 )
 
 client_two = Client.create!(
   first_name: "Caleb",
   last_name: "Brooks",
-  email: "caleb.brooks@example.com"
+  email: "caleb.brooks@example.com",
+  phone: Faker::PhoneNumber.phone_number
 )
 
 client_three = Client.create!(
   first_name: "Nina",
   last_name: "Patel",
-  email: "nina.patel@example.com"
+  email: "nina.patel@example.com",
+  phone: Faker::PhoneNumber.phone_number
 )
 
 # Services
