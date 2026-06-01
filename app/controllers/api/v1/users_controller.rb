@@ -13,14 +13,22 @@ module Api
       end
 
       def dashboard
-        # clients associated via services owned by this user
-        clients_scope = Client.joins(:services).where(services: { user_id: @user.id }).distinct
+        clients_scope = Client.for_user(@user)
         appointments_scope = Appointment.joins(:services).where(services: { user_id: @user.id }).distinct
 
         render json: {
           user: @user.as_json(only: [:id, :first_name, :last_name, :email]),
           appointments_count: appointments_scope.count,
-          recent_clients: clients_scope.order(created_at: :desc).limit(5).as_json(only: [:id, :first_name, :last_name, :email, :phone]),
+
+          clients: clients_scope
+            .order(:last_name, :first_name)
+            .as_json(only: [:id, :first_name, :last_name, :email, :phone]),
+
+          recent_clients: clients_scope
+            .order(created_at: :desc)
+            .limit(5)
+            .as_json(only: [:id, :first_name, :last_name, :email, :phone]),
+
           recent_appointments: appointments_scope
             .order(scheduled_at: :desc)
             .limit(5)
@@ -30,8 +38,8 @@ module Api
                 client_id: appointment.client_id,
                 scheduled_at: appointment.convert_time
               }
-            end        
-          }
+            end
+        }
       end
 
       def create
