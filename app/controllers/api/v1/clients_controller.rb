@@ -1,6 +1,12 @@
 module Api
   module V1
     class ClientsController < BaseController
+      before_action :set_client, only: [:show, :update, :destroy]
+
+      def set_client
+        @client = Client.find(params[:id])
+      end
+
       def index
         clients = Client.all.limit(100)
         render json: clients.as_json(only: [:id, :first_name, :last_name, :email, :phone])
@@ -8,7 +14,26 @@ module Api
 
       def show
         client = Client.find(params[:id])
-        render json: client.as_json(only: [:id, :first_name, :last_name, :email, :phone])
+
+        render json: client.as_json(
+          only: [:id, :first_name, :last_name, :email],
+          include: {
+            services: {
+              only: [:id, :title, :description, :duration_minutes, :price]
+            },
+            notes: {
+              only: [:id, :body, :user_id, :created_at]
+            },
+            appointments: {
+              only: [:id, :scheduled_at],
+              include: {
+                services: {
+                  only: [:id, :title, :price, :duration_minutes]
+                }
+              }
+            }
+          }
+        )
       end
 
       def create
@@ -21,17 +46,15 @@ module Api
       end
 
       def update
-        client = Client.find(params[:id])
-        if client.update(client_params)
-          render json: client
+        if @client.update(client_params)
+          render json: @client
         else
-          render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: @client.errors.full_messages }, status: :unprocessable_entity
         end
       end
 
       def destroy
-        client = Client.find(params[:id])
-        client.destroy
+        @client.destroy
         head :no_content
       end
 
