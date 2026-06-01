@@ -16,24 +16,18 @@ function App() {
       </nav>
 
       <Routes>
-        <Route path="/"
-          element={
-            <Login
-              setCurrentUser={setCurrentUser}
-            />
-          }
+        <Route
+          path="/"
+          element={<Login setCurrentUser={setCurrentUser} />}
         />
 
         <Route
           path="/userdashboard"
           element={
             currentUser ? (
-              <UserDashboard
-                apiBase="/api/v1"
-                userId={currentUser.id}
-              />
+              <UserDashboard currentUser={currentUser} />
             ) : (
-              <p> LOGIN You dork </p>
+              <p>LOGIN You dork</p>
             )
           }
         />

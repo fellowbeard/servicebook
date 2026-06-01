@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 
-export default function UserDashboard({ userId }) {
+export default function UserDashboard({ currentUser }) {
   const [dashboard, setDashboard] = useState(null)
 
   useEffect(() => {
-    fetch(`/api/v1/users/${userId}/dashboard`)
+    fetch(`/api/v1/users/${currentUser.id}/dashboard`)
       .then((res) => res.json())
       .then((data) => setDashboard(data))
-  }, [userId])
+  }, [currentUser])
 
   if (!dashboard) return <p>Loading...</p>
 
