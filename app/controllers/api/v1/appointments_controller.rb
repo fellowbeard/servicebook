@@ -15,7 +15,7 @@ module Api
       def create
         appointment = Appointment.new(appointment_params)
         if appointment.save
-          render json: appointment, status: :created
+          render json: appointment.with_services, status: :created
         else
           render json: { errors: appointment.errors.full_messages }, status: :unprocessable_entity
         end
@@ -23,7 +23,7 @@ module Api
 
       def update
         if @appointment.update(appointment_params)
-          render json: @appointment
+          render json: @appointment.with_services
         else
           render json: { errors: @appointment.errors.full_messages }, status: :unprocessable_entity
         end
@@ -41,7 +41,7 @@ module Api
       end
 
       def appointment_params
-        params.require(:appointment).permit(:client_id, :scheduled_at, service: [])
+        params.require(:appointment).permit(:client_id, :scheduled_at, service_ids: [])
       end
     end
   end
