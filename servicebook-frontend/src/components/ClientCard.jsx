@@ -1,33 +1,49 @@
-import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 
-export default function ClientCard() {
-  const { id } = useParams()
+export default function ClientCard({ currentUser }) {
+  const { id } = useParams();
 
-  const [client, setClient] = useState(null)
-  const [noteBody, setNoteBody] = useState('')
+  const [client, setClient] = useState(null);
+  const [noteBody, setNoteBody] = useState("");
 
   useEffect(() => {
     fetch(`/api/v1/clients/${id}`)
       .then((res) => res.json())
-      .then((data) => setClient(data))
-  }, [id])
+      .then((data) => setClient(data));
+  }, [id]);
 
-  if (!client) return <p>Loading client...</p>
+  if (!client) return <p>Loading client...</p>;
 
   function handleCreateAppointment() {
-    console.log('new appointment for client:', client)
+    console.log("new appointment for client:", client);
   }
 
   function handleAddNote(event) {
-    event.preventDefault()
+    event.preventDefault();
 
-    console.log('new note:', {
-      client_id: client.id,
-      body: noteBody,
+    fetch("/api/v1/notes", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        note: {
+          client_id: client.id,
+          user_id: currentUser.id,
+          body: noteBody,
+        },
+      }),
     })
+      .then((res) => res.json())
+      .then((newNote) => {
+        setClient({
+          ...client,
+          notes: [...(client.notes || []), newNote],
+        });
 
-    setNoteBody('')
+        setNoteBody("");
+      });
   }
 
   return (
@@ -36,10 +52,7 @@ export default function ClientCard() {
         {client.first_name} {client.last_name}
       </h2>
 
-
-      <button onClick={handleCreateAppointment}>
-        New Appointment
-      </button>
+      <button onClick={handleCreateAppointment}>New Appointment</button>
 
       <h3>Service History</h3>
       <div>
@@ -61,7 +74,16 @@ export default function ClientCard() {
       <div>
         {client.notes?.length > 0 ? (
           client.notes.map((note) => (
-            <p key={note.id}>{note.body}</p>
+            <div key={note.id}>
+              <p>{note.body}</p>
+              <small>
+                {new Date(note.created_at).toLocaleString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </small>
+            </div>
           ))
         ) : (
           <p>No notes yet.</p>
@@ -71,14 +93,10 @@ export default function ClientCard() {
       <form onSubmit={handleAddNote}>
         <label htmlFor={`note-${client.id}`}> Add note </label>
 
-        <textarea
-          id={`note-${client.id}`}
-          value={noteBody}
-          onChange={(event) => setNoteBody(event.target.value)}
-        />
+        <textarea id={`note-${client.id}`} value={noteBody} onChange={(event) => setNoteBody(event.target.value)} />
 
         <button type="submit">Save Note</button>
       </form>
     </section>
-  )
+  );
 }

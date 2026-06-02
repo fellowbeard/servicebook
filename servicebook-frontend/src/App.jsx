@@ -7,7 +7,7 @@ import Login from './components/Login.jsx'
 import ClientCard from './components/ClientCard.jsx'
 
 function App() {
-  const [currentUser, setCurrentUser] = useState({ id: 5 }) // id hardcoded for testing
+  const [currentUser, setCurrentUser] = useState(null)
 
   return (
     <>
@@ -34,7 +34,13 @@ function App() {
         />
         <Route
           path="/clients/:id"
-          element={<ClientCard currentUser={currentUser} />}
+          element={
+            currentUser ? (
+              <ClientCard currentUser={currentUser} />
+            ) : (
+              <p>Please log in first.</p>
+            )
+          }
         />
       </Routes>
     </>

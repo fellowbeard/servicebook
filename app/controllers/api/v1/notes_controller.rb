@@ -41,7 +41,7 @@ module Api
       end
 
       def note_params
-        params.require(:note).permit(:client_id, :body)
+        params.require(:note).permit(:client_id, :user_id, :body, :created_at)
       end
     end
   end
