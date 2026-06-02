@@ -59,14 +59,42 @@ export default function ClientCard({ currentUser }) {
       <h3>Service History</h3>
       <div>
         {client.appointments?.length > 0 ? (
-          client.appointments.map((appointment) => (
-            <div key={appointment.id}>
-              <strong>{appointment.title}</strong>
-              <p>{appointment.description}</p>
-              <p>${appointment.price}</p>
-              <p>{appointment.duration_minutes} minutes</p>
-            </div>
-          ))
+          // sort appointments by scheduled_at (most recent first)
+          [...client.appointments]
+            .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))
+            .map((appointment) => (
+              <div key={appointment.id} className="appointment-item">
+                <div className="appointment-meta">
+                  <strong>
+                    {new Date(appointment.scheduled_at).toLocaleString(undefined, {
+                      weekday: 'short',
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </strong>
+                </div>
+
+                <div className="appointment-services">
+                  {appointment.services && appointment.services.length > 0 ? (
+                    appointment.services.map((svc) => (
+                      <div key={svc.id} className="service-entry">
+                        <div className="service-title">{svc.title}</div>
+                        <div className="service-desc">{svc.description}</div>
+                        <div className="service-meta">
+                          <span>${svc.price}</span>
+                          <span> • {svc.duration_minutes} minutes</span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="service-entry">No services recorded for this appointment.</div>
+                  )}
+                </div>
+              </div>
+            ))
         ) : (
           <p>No services yet.</p>
         )}
