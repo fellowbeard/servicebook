@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();
 
   const [client, setClient] = useState(null);
   const [noteBody, setNoteBody] = useState("");
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetch(`/api/v1/clients/${id}`)
@@ -16,7 +18,7 @@ export default function ClientCard({ currentUser }) {
   if (!client) return <p>Loading client...</p>;
 
   function handleCreateAppointment() {
-    console.log("new appointment for client:", client);
+    navigate(`/appointments/new?client_id=${client.id}`)
   }
 
   function handleAddNote(event) {

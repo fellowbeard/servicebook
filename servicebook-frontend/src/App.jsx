@@ -5,6 +5,7 @@ import { useState } from 'react'
 import UserDashboard from './components/UserDashboard.jsx'
 import Login from './components/Login.jsx'
 import ClientCard from './components/ClientCard.jsx'
+import NewAppointment from './components/NewAppointment.jsx'
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -32,6 +33,7 @@ function App() {
             )
           }
         />
+
         <Route
           path="/clients/:id"
           element={
@@ -39,6 +41,17 @@ function App() {
               <ClientCard currentUser={currentUser} />
             ) : (
               <p>Please log in first.</p>
+            )
+          }
+        />
+
+        <Route
+          path="/appointments/new"
+          element={
+            currentUser ? (
+              <NewAppointment currentUser={currentUser} />
+            ) : (
+              <p>LOGIN You dork</p>
             )
           }
         />
