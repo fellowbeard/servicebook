@@ -14,7 +14,7 @@ module Api
 
       def show
         render json: @client.as_json(
-          only: [:id, :first_name, :last_name, :email],
+          only: [:id, :first_name, :last_name, :email, :user_id, :phone],
           include: {
             services: {
               only: [:id, :title, :description, :duration_minutes, :price]
@@ -26,7 +26,7 @@ module Api
               only: [:id, :scheduled_at],
               include: {
                 services: {
-                  only: [:id, :title, :price, :duration_minutes]
+                  only: [:id, :title, :description, :price, :duration_minutes]
                 }
               }
             }
@@ -59,7 +59,7 @@ module Api
       private
 
       def client_params
-        params.require(:client).permit(:first_name, :last_name, :email, :phone)
+        params.require(:client).permit(:first_name, :last_name, :email, :phone, :user_id)
       end
     end
   end

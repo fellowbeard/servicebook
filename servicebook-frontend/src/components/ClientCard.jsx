@@ -7,7 +7,7 @@ export default function ClientCard({ currentUser }) {
 
   const [client, setClient] = useState(null);
   const [noteBody, setNoteBody] = useState("");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`/api/v1/clients/${id}`)
@@ -18,7 +18,7 @@ export default function ClientCard({ currentUser }) {
   if (!client) return <p>Loading client...</p>;
 
   function handleCreateAppointment() {
-    navigate(`/appointments/new?client_id=${client.id}`)
+    navigate(`/appointments/new?client_id=${client.id}`);
   }
 
   function handleAddNote(event) {
@@ -58,13 +58,13 @@ export default function ClientCard({ currentUser }) {
 
       <h3>Service History</h3>
       <div>
-        {client.services?.length > 0 ? (
-          client.services.map((service) => (
-            <div key={service.id}>
-              <strong>{service.title}</strong>
-              <p>{service.description}</p>
-              <p>${service.price}</p>
-              <p>{service.duration_minutes} minutes</p>
+        {client.appointments?.length > 0 ? (
+          client.appointments.map((appointment) => (
+            <div key={appointment.id}>
+              <strong>{appointment.title}</strong>
+              <p>{appointment.description}</p>
+              <p>${appointment.price}</p>
+              <p>{appointment.duration_minutes} minutes</p>
             </div>
           ))
         ) : (

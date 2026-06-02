@@ -23,6 +23,7 @@ john = User.create!(
 
 # Clients
 client_one = Client.create!(
+  user: jane,
   first_name: "Maya",
   last_name: "Rivera",
   email: "maya.rivera@example.com",
@@ -30,6 +31,7 @@ client_one = Client.create!(
 )
 
 client_two = Client.create!(
+  user: jane,
   first_name: "Caleb",
   last_name: "Brooks",
   email: "caleb.brooks@example.com",
@@ -37,6 +39,7 @@ client_two = Client.create!(
 )
 
 client_three = Client.create!(
+  user: john,
   first_name: "Nina",
   last_name: "Patel",
   email: "nina.patel@example.com",
