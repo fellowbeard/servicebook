@@ -1,25 +1,33 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function UserDashboard({ currentUser }) {
-  const [dashboard, setDashboard] = useState(null)
-  const navigate = useNavigate()
+  const [dashboard, setDashboard] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch(`/api/v1/users/${currentUser.id}/dashboard`)
       .then((res) => res.json())
-      .then((data) => setDashboard(data))
-  }, [currentUser.id])
+      .then((data) => setDashboard(data));
+  }, [currentUser.id]);
 
   function handleClientSelect(event) {
-    const clientId = event.target.value
+    const clientId = event.target.value;
 
     if (clientId) {
-      navigate(`/clients/${clientId}`)
+      navigate(`/clients/${clientId}`);
     }
   }
 
-  if (!dashboard) return <p>Loading...</p>
+  function handleNewAppointment() {
+    navigate("/appointments/new");
+  }
+
+  function handleNewClient() {
+    navigate("/clients/new");
+  }
+
+  if (!dashboard) return <p>Loading...</p>;
 
   return (
     <main>
@@ -29,11 +37,19 @@ export default function UserDashboard({ currentUser }) {
         Welcome, {dashboard.user?.first_name} {dashboard.user?.last_name}
       </h2>
 
+      <div>
+        <button onClick={handleNewAppointment}>New Appointment</button>
+
+        <button onClick={handleNewClient}>New Client</button>
+      </div>
+
       <h3>Recent Clients</h3>
       <div>
         {dashboard.recent_clients?.map((client) => (
           <div key={client.id}>
-            {client.first_name} {client.last_name} — {client.email}
+            <Link to={`/clients/${client.id}`}>
+              {client.first_name} {client.last_name}
+            </Link>
           </div>
         ))}
       </div>
@@ -58,5 +74,5 @@ export default function UserDashboard({ currentUser }) {
         ))}
       </div>
     </main>
-  )
+  );
 }
