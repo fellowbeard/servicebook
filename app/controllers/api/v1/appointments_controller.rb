@@ -5,17 +5,17 @@ module Api
 
       def index
         appointments = Appointment.includes(:services)
-        render json: appointments.map(&:with_services)
+        render json: appointments.map { |appointment| AppointmentSerializer.new(appointment).as_json }
       end
 
       def show
-        render json: @appointment.with_services
+        render json: AppointmentSerializer.new(@appointment).as_json
       end
 
       def create
         appointment = Appointment.new(appointment_params)
         if appointment.save
-          render json: appointment.with_services, status: :created
+          render json: AppointmentSerializer.new(appointment).as_json, status: :created
         else
           render json: { errors: appointment.errors.full_messages }, status: :unprocessable_entity
         end
@@ -23,7 +23,7 @@ module Api
 
       def update
         if @appointment.update(appointment_params)
-          render json: @appointment.with_services
+          render json: AppointmentSerializer.new(@appointment).as_json
         else
           render json: { errors: @appointment.errors.full_messages }, status: :unprocessable_entity
         end

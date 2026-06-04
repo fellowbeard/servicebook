@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import ServiceForm from "./ServiceForm.jsx";
 
 export default function UserDashboard({ currentUser }) {
   const [dashboard, setDashboard] = useState(null);
   const navigate = useNavigate();
+  const [showServiceForm, setShowServiceForm] = useState(false);
+  const [editingService, setEditingService] = useState(null);
 
   useEffect(() => {
     fetch(`/api/v1/users/${currentUser.id}/dashboard`)
@@ -66,6 +69,63 @@ export default function UserDashboard({ currentUser }) {
           </option>
         ))}
       </select>
+
+      <button
+        onClick={() => {
+          setEditingService(null);
+          setShowServiceForm(!showServiceForm);
+        }}
+      >
+        {showServiceForm ? "Cancel" : "New Service"}
+      </button>
+
+      {showServiceForm && (
+        <ServiceForm
+          currentUser={currentUser}
+          existingService={editingService}
+          onServiceCreated={(createdService) => {
+            setDashboard({
+              ...dashboard,
+              services: [...(dashboard.services || []), createdService],
+            });
+
+            setShowServiceForm(false);
+          }}
+          onServiceUpdated={(updatedService) => {
+            setDashboard({
+              ...dashboard,
+              services: dashboard.services.map((service) =>
+                service.id === updatedService.id ? updatedService : service
+              ),
+            });
+
+            setEditingService(null);
+            setShowServiceForm(false);
+          }}
+        />
+      )}
+
+      <h3>Services</h3>
+
+      <div>
+        {dashboard.services?.length > 0 ? (
+          dashboard.services.map((service) => (
+            <div key={service.id}>
+              <strong>{service.title}</strong> — ${service.price} — {service.duration_minutes} minutes
+              <button
+                onClick={() => {
+                  setEditingService(service);
+                  setShowServiceForm(true);
+                }}
+              >
+                Edit
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No services yet.</p>
+        )}
+      </div>
 
       <h3>Recent Appointments</h3>
       <div>
