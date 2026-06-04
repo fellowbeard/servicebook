@@ -9,25 +9,28 @@ module Api
       end
 
       def show
-        render json: @user
+        render json: @user.as_json(only: [:id, :first_name, :last_name, :email])
       end
 
       def dashboard
         clients_scope = Client.for_user(@user)
         appointments_scope = Appointment.joins(:services).where(services: { user_id: @user.id }).distinct
+        services_scope = @user.services.alphabetical
 
         render json: {
           user: @user.as_json(only: [:id, :first_name, :last_name, :email]),
           appointments_count: appointments_scope.count,
+          services: services_scope
+            .map { |service| ServiceSerializer.new(service).as_json },
 
           clients: clients_scope
             .order(:last_name, :first_name)
-            .as_json(only: [:id, :first_name, :last_name, :email, :phone]),
+            .map { |client| ClientSerializer.new(client).as_json },
 
           recent_clients: clients_scope
             .order(created_at: :desc)
             .limit(5)
-            .as_json(only: [:id, :first_name, :last_name, :email, :phone]),
+            .map { |client| ClientSerializer.new(client).as_json },
 
           recent_appointments: appointments_scope
             .order(scheduled_at: :desc)

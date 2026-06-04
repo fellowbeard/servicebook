@@ -9,35 +9,17 @@ module Api
 
       def index
         clients = Client.all.limit(100)
-        render json: clients.as_json(only: [:id, :first_name, :last_name, :email, :phone])
+        render json: clients.map { |client| ClientSerializer.new(client).as_json }
       end
 
       def show
-        render json: @client.as_json(
-          only: [:id, :first_name, :last_name, :email, :user_id, :phone],
-          include: {
-            services: {
-              only: [:id, :title, :description, :duration_minutes, :price]
-            },
-            notes: {
-              only: [:id, :body, :user_id, :created_at]
-            },
-            appointments: {
-              only: [:id, :scheduled_at],
-              include: {
-                services: {
-                  only: [:id, :title, :description, :price, :duration_minutes]
-                }
-              }
-            }
-          }
-        )
+        render json: ClientDetailSerializer.new(@client).as_json
       end
 
       def create
         client = Client.new(client_params)
         if client.save
-          render json: client, status: :created
+          render json: ClientSerializer.new(client).as_json, status: :created
         else
           render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
         end
@@ -45,7 +27,7 @@ module Api
 
       def update
         if @client.update(client_params)
-          render json: @client
+          render json: ClientSerializer.new(@client).as_json
         else
           render json: { errors: @client.errors.full_messages }, status: :unprocessable_entity
         end
