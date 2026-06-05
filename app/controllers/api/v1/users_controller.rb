@@ -32,6 +32,10 @@ module Api
             .limit(5)
             .map { |client| ClientSerializer.new(client).as_json },
 
+          appointments: appointments_scope
+            .order(:scheduled_at)
+            .map { |appointment| AppointmentSerializer.new(appointment).as_json },
+
           recent_appointments: appointments_scope
             .order(scheduled_at: :desc)
             .limit(5)

@@ -1,7 +1,20 @@
 import { useState } from "react";
 
-export default function ServiceForm({ currentUser, existingService = null, onServiceCreated, onServiceUpdated }) {
+export default function ServiceForm({
+  currentUser,
+  existingService = null,
+  onServiceCreated,
+  onServiceUpdated,
+  onServiceDeleted,
+}) {
   const isEditing = Boolean(existingService);
+
+  const blankService = {
+    title: "",
+    description: "",
+    duration_minutes: "",
+    price: "",
+  };
 
   const [service, setService] = useState({
     title: existingService?.title || "",
@@ -42,15 +55,20 @@ export default function ServiceForm({ currentUser, existingService = null, onSer
           onServiceUpdated?.(savedService);
         } else {
           onServiceCreated?.(savedService);
-
-          setService({
-            title: "",
-            description: "",
-            duration_minutes: "",
-            price: "",
-          });
+          setService(blankService);
         }
       });
+  }
+
+  function handleDelete() {
+    if (!existingService) return;
+
+    fetch(`/api/v1/services/${existingService.id}`, {
+      method: "DELETE",
+    }).then(() => {
+      onServiceDeleted?.(existingService.id);
+      setService(blankService);
+    });
   }
 
   return (
@@ -76,6 +94,12 @@ export default function ServiceForm({ currentUser, existingService = null, onSer
       <input id="service-price" name="price" type="number" step="0.01" value={service.price} onChange={handleChange} />
 
       <button type="submit">{isEditing ? "Update Service" : "Save Service"}</button>
+
+      {isEditing && (
+        <button type="button" onClick={handleDelete}>
+          Delete Service
+        </button>
+      )}
     </form>
   );
 }

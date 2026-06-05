@@ -81,6 +81,7 @@ export default function UserDashboard({ currentUser }) {
 
       {showServiceForm && (
         <ServiceForm
+          key={editingService ? editingService.id : "new"}
           currentUser={currentUser}
           existingService={editingService}
           onServiceCreated={(createdService) => {
@@ -97,6 +98,15 @@ export default function UserDashboard({ currentUser }) {
               services: dashboard.services.map((service) =>
                 service.id === updatedService.id ? updatedService : service
               ),
+            });
+
+            setEditingService(null);
+            setShowServiceForm(false);
+          }}
+          onServiceDeleted={(deletedServiceId) => {
+            setDashboard({
+              ...dashboard,
+              services: dashboard.services.filter((service) => service.id !== deletedServiceId),
             });
 
             setEditingService(null);
