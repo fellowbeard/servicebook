@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import AppointmentForm from "./AppointmentForm.jsx";
+import AppointmentForm from "./forms/AppointmentForm.jsx";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();

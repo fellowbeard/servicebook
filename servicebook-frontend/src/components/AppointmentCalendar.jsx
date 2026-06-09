@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AppointmentForm from "./AppointmentForm.jsx";
+import AppointmentForm from "./forms/AppointmentForm.jsx";
 
 export default function AppointmentCalendar({ appointments = [], currentUser = null, onAppointmentUpdate = null }) {
   const [currentDate, setCurrentDate] = useState(new Date());

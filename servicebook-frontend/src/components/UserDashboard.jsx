@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import ServiceForm from "./ServiceForm.jsx";
+import ServiceForm from "./forms/ServiceForm.jsx";
 import AppointmentCalendar from "./AppointmentCalendar.jsx";
 
 export default function UserDashboard({ currentUser }) {

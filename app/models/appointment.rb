@@ -9,15 +9,6 @@ class Appointment < ApplicationRecord
   validates :scheduled_at, presence: true
   validates :status, presence: true, inclusion: { in: STATUS_OPTIONS }
 
-  def with_services
-    as_json.merge(
-      scheduled_at: convert_time,
-      services: services.as_json(
-        only: [:id, :title, :description, :duration_minutes, :price]
-      )
-    )
-  end
-
   def convert_time
     self.scheduled_at.strftime("%A, %B %d, %Y")
   end

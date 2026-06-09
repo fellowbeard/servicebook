@@ -5,8 +5,8 @@ import { useState } from "react";
 import UserDashboard from "./components/UserDashboard.jsx";
 import Login from "./components/Login.jsx";
 import ClientCard from "./components/ClientCard.jsx";
-import NewClient from "./components/NewClient.jsx";
-import NewAppointment from "./components/NewAppointment.jsx";
+import NewClient from "./components/forms/NewClient.jsx";
+import NewAppointment from "./components/forms/NewAppointment.jsx";
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
