@@ -1,6 +1,7 @@
 module Api
   module V1
     class UsersController < BaseController
+      before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_user, only: %i[show update destroy dashboard]
 
       def index

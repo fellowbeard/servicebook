@@ -1,6 +1,7 @@
 module Api
   module V1
     class ClientsController < BaseController
+      before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_client, only: [:show, :update, :destroy]
 
       def set_client

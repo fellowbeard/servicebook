@@ -7,18 +7,38 @@ Note.destroy_all
 Service.destroy_all
 Client.destroy_all
 User.destroy_all
+Account.destroy_all
+
+# Account
+account_one = Account.create!(
+  business_name: "Jane Stuff's Stuff and Things"
+)
+
+account_two = Account.create!(
+  business_name: "John Denver's Sing Songs and Stuff"
+)
 
 # Users
 jane = User.create!(
+  account: account_one,
   first_name: "Jane", 
   last_name: "Stuff", 
   email: "janestuff@example.com"
 )
 
 john = User.create!(
+  account: account_two,
   first_name: "John", 
   last_name: "Denver", 
   email: "johndenver@example.com"
+)
+
+User.create!(
+  account: jane.account,
+  first_name: "Susette",
+  last_name: "StaffReader",
+  email: "susettestaffreader@example.com",
+  role: "read_only"
 )
 
 # Clients
@@ -47,27 +67,24 @@ client_three = Client.create!(
 )
 
 # Services
-Service.create!(
+deep_tissue = Service.create!(
   user: jane,
-  client: client_one,
   title: "Deep Tissue Massage",
   description: "Focused deep tissue session for shoulder and back tension.",
   duration_minutes: 60,
   price: 95.00
 )
 
-Service.create!(
+custom_rug = Service.create!(
   user: jane,
-  client: client_two,
   title: "Custom Rug Consultation",
   description: "Initial consultation for a custom tufted rug design.",
   duration_minutes: 45,
   price: 50.00
 )
 
-Service.create!(
+follow_up = Service.create!(
   user: john,
-  client: client_three,
   title: "Follow-up Appointment",
   description: "Follow-up service appointment and client check-in.",
   duration_minutes: 30,
@@ -94,34 +111,34 @@ appointment_three = Appointment.create!(
 # Appointment 1: Deep Tissue + Custom Rug
 AppointmentService.create!(
   appointment: appointment_one,
-  service: Service.find_by(title: "Deep Tissue Massage")
+  service: deep_tissue
 )
 
 AppointmentService.create!(
   appointment: appointment_one,
-  service: Service.find_by(title: "Custom Rug Consultation")
+  service: custom_rug
 )
 
 # Appointment 2: Custom Rug + Follow-up
 AppointmentService.create!(
   appointment: appointment_two,
-  service: Service.find_by(title: "Custom Rug Consultation")
+  service: custom_rug
 )
 
 AppointmentService.create!(
   appointment: appointment_two,
-  service: Service.find_by(title: "Follow-up Appointment")
+  service: follow_up
 )
 
 # Appointment 3: Follow-up + Deep Tissue
 AppointmentService.create!(
   appointment: appointment_three,
-  service: Service.find_by(title: "Follow-up Appointment")
+  service: follow_up
 )
 
 AppointmentService.create!(
   appointment: appointment_three,
-  service: Service.find_by(title: "Deep Tissue Massage")
+  service: deep_tissue
 )
 
 # Notes

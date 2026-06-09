@@ -1,6 +1,7 @@
 module Api
   module V1
     class AppointmentsController < BaseController
+      before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_appointment, only: %i[show update destroy]
 
       def index
