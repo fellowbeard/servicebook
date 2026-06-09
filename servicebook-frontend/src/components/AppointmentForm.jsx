@@ -1,14 +1,26 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function AppointmentForm({ currentUser, initialClientId = "" }) {
+export default function AppointmentForm({
+  currentUser,
+  initialClientId = "",
+  existingAppointment = null,
+  onAppointmentUpdated,
+}) {
   const navigate = useNavigate();
+  const isEditing = Boolean(existingAppointment);
+
   const [services, setServices] = useState([]);
-  const [selectedServiceIds, setSelectedServiceIds] = useState([]);
+  const [selectedServiceIds, setSelectedServiceIds] = useState(
+    existingAppointment?.services?.map((service) => service.id) || []
+  );
 
   const [clients, setClients] = useState([]);
-  const [clientId, setClientId] = useState(initialClientId || "");
-  const [scheduledAt, setScheduledAt] = useState("");
+  const [clientId, setClientId] = useState(existingAppointment?.client_id || initialClientId || "");
+
+  const [scheduledAt, setScheduledAt] = useState(existingAppointment?.scheduled_at || "");
+
+  const [status, setStatus] = useState(existingAppointment?.status || "scheduled");
 
   const [newClient, setNewClient] = useState({
     first_name: "",
@@ -36,9 +48,13 @@ export default function AppointmentForm({ currentUser, initialClientId = "" }) {
     });
   }
 
-  function createAppointment(selectedClientId) {
-    return fetch("/api/v1/appointments", {
-      method: "POST",
+  function saveAppointment(selectedClientId) {
+    const url = isEditing ? `/api/v1/appointments/${existingAppointment.id}` : "/api/v1/appointments";
+
+    const method = isEditing ? "PATCH" : "POST";
+
+    return fetch(url, {
+      method,
       headers: {
         "Content-Type": "application/json",
       },
@@ -46,6 +62,7 @@ export default function AppointmentForm({ currentUser, initialClientId = "" }) {
         appointment: {
           client_id: selectedClientId,
           scheduled_at: scheduledAt,
+          status,
           service_ids: selectedServiceIds,
         },
       }),
@@ -70,7 +87,7 @@ export default function AppointmentForm({ currentUser, initialClientId = "" }) {
       })
         .then((res) => res.json())
         .then((createdClient) => {
-          return createAppointment(createdClient.id).then(() => createdClient);
+          return saveAppointment(createdClient.id).then(() => createdClient);
         })
         .then((createdClient) => {
           navigate(`/clients/${createdClient.id}`);
@@ -79,19 +96,24 @@ export default function AppointmentForm({ currentUser, initialClientId = "" }) {
       return;
     }
 
-    createAppointment(clientId).then(() => {
-      navigate(`/clients/${clientId}`);
+    saveAppointment(clientId).then(() => {
+      if (isEditing && onAppointmentUpdated) {
+        onAppointmentUpdated();
+      } else {
+        navigate(`/clients/${clientId}`);
+      }
     });
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>New Appointment</h2>
+      <h2>{isEditing ? "Edit Appointment" : "New Appointment"}</h2>
 
       <label htmlFor="client">Client</label>
       <select id="client" value={clientId} onChange={(event) => setClientId(event.target.value)}>
         <option value="">Select a client</option>
-        <option value="new">+ New Client</option>
+
+        {!isEditing && <option value="new">+ New Client</option>}
 
         {clients.map((client) => (
           <option key={client.id} value={client.id}>
@@ -143,7 +165,18 @@ export default function AppointmentForm({ currentUser, initialClientId = "" }) {
         onChange={(event) => setScheduledAt(event.target.value)}
       />
 
-      <button type="submit">Create Appointment</button>
+      {isEditing && (
+        <>
+          <label htmlFor="status">Status</label>
+          <select id="status" value={status} onChange={(event) => setStatus(event.target.value)}>
+            <option value="scheduled">Scheduled</option>
+            <option value="completed">Completed</option>
+            <option value="canceled">Canceled</option>
+          </select>
+        </>
+      )}
+
+      <button type="submit">{isEditing ? "Update Appointment" : "Create Appointment"}</button>
     </form>
   );
 }

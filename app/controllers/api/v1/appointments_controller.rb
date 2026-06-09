@@ -41,7 +41,7 @@ module Api
       end
 
       def appointment_params
-        params.require(:appointment).permit(:client_id, :scheduled_at, service_ids: [])
+        params.require(:appointment).permit(:client_id, :status, :scheduled_at, service_ids: [])
       end
     end
   end

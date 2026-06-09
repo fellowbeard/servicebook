@@ -7,9 +7,9 @@ class AppointmentSerializer
     {
       id: @appointment.id,
       client_id: @appointment.client_id,
-      client: ClientSerializer.new(@appointment.client).as_json,
-      scheduled_at: @appointment.scheduled_at.strftime("%Y-%m-%dT%H:%M:%S"),
+      scheduled_at: @appointment.scheduled_at,
       status: @appointment.status,
+
       services: @appointment.services.map do |service|
         ServiceSerializer.new(service).as_json
       end

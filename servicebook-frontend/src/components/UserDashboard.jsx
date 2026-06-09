@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import ServiceForm from "./ServiceForm.jsx";
+import AppointmentCalendar from "./AppointmentCalendar.jsx";
 
 export default function UserDashboard({ currentUser }) {
   const [dashboard, setDashboard] = useState(null);
@@ -136,13 +137,16 @@ export default function UserDashboard({ currentUser }) {
           <p>No services yet.</p>
         )}
       </div>
-
-      <h3>Recent Appointments</h3>
-      <div>
-        {dashboard.recent_appointments?.map((appointment) => (
-          <div key={appointment.id}>{appointment.scheduled_at}</div>
-        ))}
-      </div>
+      <AppointmentCalendar
+        appointments={dashboard.appointments || []}
+        currentUser={currentUser}
+        onAppointmentUpdate={() => {
+          // Refresh dashboard data
+          fetch(`/api/v1/users/${currentUser.id}/dashboard`)
+            .then((res) => res.json())
+            .then((data) => setDashboard(data));
+        }}
+      />
     </main>
   );
 }

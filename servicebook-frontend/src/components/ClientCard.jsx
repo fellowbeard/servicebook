@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-
 import { useParams, useNavigate } from "react-router-dom";
+import AppointmentForm from "./AppointmentForm.jsx";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();
 
   const [client, setClient] = useState(null);
   const [noteBody, setNoteBody] = useState("");
+  const [editingAppointment, setEditingAppointment] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -63,16 +64,21 @@ export default function ClientCard({ currentUser }) {
           [...client.appointments]
             .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))
             .map((appointment) => (
-              <div key={appointment.id} className="appointment-item">
+              <button
+                key={appointment.id}
+                type="button"
+                className="appointment-item"
+                onClick={() => setEditingAppointment(appointment)}
+              >
                 <div className="appointment-meta">
                   <strong>
                     {new Date(appointment.scheduled_at).toLocaleString(undefined, {
-                      weekday: 'short',
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </strong>
                 </div>
@@ -93,12 +99,26 @@ export default function ClientCard({ currentUser }) {
                     <div className="service-entry">No services recorded for this appointment.</div>
                   )}
                 </div>
-              </div>
+              </button>
             ))
         ) : (
           <p>No services yet.</p>
         )}
       </div>
+
+      {editingAppointment && (
+        <AppointmentForm
+          currentUser={currentUser}
+          existingAppointment={editingAppointment}
+          onAppointmentUpdated={() => {
+            setEditingAppointment(null);
+            // Refresh client data
+            fetch(`/api/v1/clients/${id}`)
+              .then((res) => res.json())
+              .then((data) => setClient(data));
+          }}
+        />
+      )}
 
       <h3>Notes</h3>
       <div>
