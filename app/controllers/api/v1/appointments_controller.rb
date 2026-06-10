@@ -1,12 +1,11 @@
 module Api
   module V1
     class AppointmentsController < BaseController
-      before_action :require_current_user
       before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_appointment, only: [:show, :update, :destroy]
 
       def index
-        appointments = Appointment.includes(:services)
+        appointments = current_account.appointments.includes(:services)
         render json: appointments.map { |appointment| AppointmentSerializer.new(appointment).as_json }
       end
 

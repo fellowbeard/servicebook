@@ -1,30 +1,31 @@
 module Api
   module V1
     class UsersController < BaseController
-      before_action :set_user, only: [:show, :update, :destroy, :dashboard]
+      before_action :set_user, only: [:show, :update, :destroy]
       before_action :require_write_access, only: [:create, :update, :destroy]
 
       def index
-        users = User.all
+        users = current_account.users
         render json: users
       end
 
       def show
-        render json: @user.as_json(only: [:id, :first_name, :last_name, :email])
+        render json: @user.as_json(only: [:id, :account_id, :role, :first_name, :last_name, :email])
       end
 
       def dashboard
-        clients_scope = Client.for_user(@user)
-        appointments_scope = Appointment.joins(:services).where(services: { user_id: @user.id }).distinct
-        services_scope = @user.services.alphabetical
-        account_for_user = @user.account
+        user = current_user
+
+        clients_scope = current_account.clients
+        appointments_scope = current_account.appointments.includes(:client, :services, :resource)
+        services_scope = user.services.alphabetical
 
         render json: {
-          user: @user.as_json(only: [:id, :account_id, :role, :first_name, :last_name, :email]),
+          user: user.as_json(only: [:id, :account_id, :role, :first_name, :last_name, :email]),
           appointments_count: appointments_scope.count,
-          account: AccountSerializer.new(account_for_user).as_json,
-          services: services_scope
-            .map { |service| ServiceSerializer.new(service).as_json },
+          account: AccountSerializer.new(current_account).as_json,
+
+          services: services_scope.map { |service| ServiceSerializer.new(service).as_json },
 
           clients: clients_scope
             .order(:last_name, :first_name)
@@ -53,7 +54,8 @@ module Api
       end
 
       def create
-        user = User.new(user_params)
+        user = current_account.users.new(user_params)
+
         if user.save
           render json: user, status: :created
         else
@@ -77,11 +79,11 @@ module Api
       private
 
       def set_user
-        @user = User.find(params[:id])
+        @user = current_account.users.find(params[:id])
       end
 
       def user_params
-        params.require(:user).permit(:first_name, :last_name, :email)
+        params.require(:user).permit(:first_name, :last_name, :email, :role)
       end
     end
   end

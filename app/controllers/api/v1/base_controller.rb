@@ -1,6 +1,8 @@
 module Api
   module V1
     class BaseController < ActionController::API
+      before_action :require_current_user
+
       private
 
       def current_user
@@ -17,6 +19,16 @@ module Api
         return if current_user.can_write?
 
         render json: { error: "Read-only users cannot make changes." }, status: :forbidden
+      end
+
+      def current_account
+        current_user.account
+      end
+
+      def require_owner
+        return if current_user.owner?
+
+        render json: { error: "Only account owners can do that." }, status: :forbidden
       end
     end
   end

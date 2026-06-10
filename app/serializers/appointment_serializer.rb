@@ -6,7 +6,6 @@ class AppointmentSerializer
   def as_json(*)
     {
       id: @appointment.id,
-      account_id: @appointment.account_id,
       user_id: @appointment.user_id,
       client_id: @appointment.client_id,
       client: ClientSerializer.new(@appointment.client).as_json,
@@ -16,5 +15,23 @@ class AppointmentSerializer
         ServiceSerializer.new(service).as_json
       end
     }
+  end
+
+  private
+
+  def serialized_client
+    return nil unless @appointment.client
+
+    {
+      id: @appointment.client.id,
+      first_name: @appointment.client.first_name,
+      last_name: @appointment.client.last_name
+    }
+  end
+
+  def serialized_resource
+    return nil unless @appointment.resource
+
+    ResourceSerializer.new(@appointment.resource).as_json
   end
 end
