@@ -57,6 +57,7 @@ export default function AppointmentForm({
       method,
       headers: {
         "Content-Type": "application/json",
+        "X-User-Id": currentUser.id,
       },
       body: JSON.stringify({
         appointment: {
@@ -77,6 +78,7 @@ export default function AppointmentForm({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-User-Id": currentUser.id,
         },
         body: JSON.stringify({
           client: {

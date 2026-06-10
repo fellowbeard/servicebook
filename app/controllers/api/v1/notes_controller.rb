@@ -1,8 +1,9 @@
 module Api
   module V1
     class NotesController < BaseController
+      before_action :require_current_user
       before_action :require_write_access, only: [:create, :update, :destroy]
-      before_action :set_note, only: %i[show update destroy]
+      before_action :set_note, only: [:show, :update, :destroy]
 
       def index
         notes = Note.all
@@ -14,7 +15,7 @@ module Api
       end
 
       def create
-        note = Note.new(note_params)
+        note = current_user.notes.new(note_params)
         if note.save
           render json: NoteSerializer.new(note).as_json, status: :created
         else
@@ -42,7 +43,7 @@ module Api
       end
 
       def note_params
-        params.require(:note).permit(:client_id, :user_id, :body)
+        params.require(:note).permit(:client_id, :body)
       end
     end
   end

@@ -1,8 +1,9 @@
 module Api
   module V1
     class AppointmentsController < BaseController
+      before_action :require_current_user
       before_action :require_write_access, only: [:create, :update, :destroy]
-      before_action :set_appointment, only: %i[show update destroy]
+      before_action :set_appointment, only: [:show, :update, :destroy]
 
       def index
         appointments = Appointment.includes(:services)
@@ -15,6 +16,9 @@ module Api
 
       def create
         appointment = Appointment.new(appointment_params)
+        appointment.user = current_user
+        appointment.account = current_user.account
+
         if appointment.save
           render json: AppointmentSerializer.new(appointment).as_json, status: :created
         else
@@ -44,8 +48,6 @@ module Api
       def appointment_params
         params.require(:appointment).permit(
           :client_id,
-          :user_id,
-          :account_id,
           :resource_id,
           :scheduled_at,
           :status,

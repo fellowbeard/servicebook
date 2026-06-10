@@ -1,6 +1,7 @@
 module Api
   module V1
     class ClientsController < BaseController
+      before_action :require_current_user
       before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_client, only: [:show, :update, :destroy]
 
@@ -18,7 +19,8 @@ module Api
       end
 
       def create
-        client = Client.new(client_params)
+        client = current_user.clients.new(client_params)
+        client.account = current_user.account        
         if client.save
           render json: ClientSerializer.new(client).as_json, status: :created
         else
@@ -42,7 +44,7 @@ module Api
       private
 
       def client_params
-        params.require(:client).permit(:first_name, :last_name, :email, :phone, :user_id)
+        params.require(:client).permit(:first_name, :last_name, :email, :phone)
       end
     end
   end

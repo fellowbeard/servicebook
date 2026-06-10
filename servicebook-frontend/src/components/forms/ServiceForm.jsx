@@ -41,6 +41,7 @@ export default function ServiceForm({
       method,
       headers: {
         "Content-Type": "application/json",
+        "X-User-Id": currentUser.id,
       },
       body: JSON.stringify({
         service: {

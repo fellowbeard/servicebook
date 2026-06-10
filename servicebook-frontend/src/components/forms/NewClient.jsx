@@ -25,6 +25,7 @@ export default function NewClient({ currentUser }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-User-Id": currentUser.id,
       },
       body: JSON.stringify({
         client: {

@@ -35,7 +35,7 @@ export default function UserDashboard({ currentUser }) {
 
   return (
     <main>
-      <h1>Dashboard</h1>
+      <h1>{dashboard.account?.business_name} Dashboard</h1>
 
       <h2>
         Welcome, {dashboard.user?.first_name} {dashboard.user?.last_name}

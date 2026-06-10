@@ -1,8 +1,8 @@
 module Api
   module V1
     class UsersController < BaseController
+      before_action :set_user, only: [:show, :update, :destroy, :dashboard]
       before_action :require_write_access, only: [:create, :update, :destroy]
-      before_action :set_user, only: %i[show update destroy dashboard]
 
       def index
         users = User.all
@@ -17,10 +17,12 @@ module Api
         clients_scope = Client.for_user(@user)
         appointments_scope = Appointment.joins(:services).where(services: { user_id: @user.id }).distinct
         services_scope = @user.services.alphabetical
+        account_for_user = @user.account
 
         render json: {
-          user: @user.as_json(only: [:id, :first_name, :last_name, :email]),
+          user: @user.as_json(only: [:id, :account_id, :role, :first_name, :last_name, :email]),
           appointments_count: appointments_scope.count,
+          account: AccountSerializer.new(account_for_user).as_json,
           services: services_scope
             .map { |service| ServiceSerializer.new(service).as_json },
 
