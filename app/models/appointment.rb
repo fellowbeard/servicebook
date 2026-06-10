@@ -1,4 +1,8 @@
 class Appointment < ApplicationRecord
+  belongs_to :account, optional: true
+  belongs_to :user, optional: true
+  belongs_to :resource, optional: true
+
   belongs_to :client
   
   has_many :appointment_services, dependent: :destroy

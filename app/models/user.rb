@@ -3,7 +3,9 @@ class User < ApplicationRecord
 
   has_many :services, dependent: :destroy
   has_many :notes, dependent: :destroy
-  has_many :clients
+  has_many :clients, dependent: :destroy
+  has_many :appointments, dependent: :nullify
+
 
   ROLES = ["owner", "staff", "read_only"]
 

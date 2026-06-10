@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_09_192048) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_160958) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -30,15 +30,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_192048) do
   end
 
   create_table "appointments", force: :cascade do |t|
+    t.bigint "account_id"
     t.bigint "client_id", null: false
     t.datetime "created_at", null: false
+    t.bigint "resource_id"
     t.datetime "scheduled_at", null: false
     t.string "status", default: "scheduled", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["account_id"], name: "index_appointments_on_account_id"
     t.index ["client_id"], name: "index_appointments_on_client_id"
+    t.index ["resource_id"], name: "index_appointments_on_resource_id"
+    t.index ["user_id"], name: "index_appointments_on_user_id"
   end
 
   create_table "clients", force: :cascade do |t|
+    t.bigint "account_id"
     t.datetime "created_at", null: false
     t.string "email"
     t.string "first_name"
@@ -46,6 +53,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_192048) do
     t.string "phone"
     t.datetime "updated_at", null: false
     t.bigint "user_id"
+    t.index ["account_id"], name: "index_clients_on_account_id"
     t.index ["user_id"], name: "index_clients_on_user_id"
   end
 
@@ -57,6 +65,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_192048) do
     t.bigint "user_id", null: false
     t.index ["client_id"], name: "index_notes_on_client_id"
     t.index ["user_id"], name: "index_notes_on_user_id"
+  end
+
+  create_table "resources", force: :cascade do |t|
+    t.bigint "account_id"
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_resources_on_account_id"
   end
 
   create_table "services", force: :cascade do |t|
@@ -83,10 +99,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_09_192048) do
 
   add_foreign_key "appointment_services", "appointments"
   add_foreign_key "appointment_services", "services"
+  add_foreign_key "appointments", "accounts"
   add_foreign_key "appointments", "clients"
+  add_foreign_key "appointments", "resources"
+  add_foreign_key "appointments", "users"
+  add_foreign_key "clients", "accounts"
   add_foreign_key "clients", "users"
   add_foreign_key "notes", "clients"
   add_foreign_key "notes", "users"
+  add_foreign_key "resources", "accounts"
   add_foreign_key "services", "users"
   add_foreign_key "users", "accounts"
 end

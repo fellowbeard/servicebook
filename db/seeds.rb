@@ -1,4 +1,4 @@
-require 'faker'
+require "faker"
 
 # Destroy existing records
 AppointmentService.destroy_all
@@ -6,10 +6,11 @@ Appointment.destroy_all
 Note.destroy_all
 Service.destroy_all
 Client.destroy_all
+Resource.destroy_all
 User.destroy_all
 Account.destroy_all
 
-# Account
+# Accounts
 account_one = Account.create!(
   business_name: "Jane Stuff's Stuff and Things"
 )
@@ -18,23 +19,41 @@ account_two = Account.create!(
   business_name: "John Denver's Sing Songs and Stuff"
 )
 
+# Resources
+chair_one = Resource.create!(
+  account: account_one,
+  name: "Chair 1"
+)
+
+chair_two = Resource.create!(
+  account: account_one,
+  name: "Chair 2"
+)
+
+john_chair = Resource.create!(
+  account: account_two,
+  name: "Chair 1"
+)
+
 # Users
 jane = User.create!(
   account: account_one,
-  first_name: "Jane", 
-  last_name: "Stuff", 
-  email: "janestuff@example.com"
+  first_name: "Jane",
+  last_name: "Stuff",
+  email: "janestuff@example.com",
+  role: "owner"
 )
 
 john = User.create!(
   account: account_two,
-  first_name: "John", 
-  last_name: "Denver", 
-  email: "johndenver@example.com"
+  first_name: "John",
+  last_name: "Denver",
+  email: "johndenver@example.com",
+  role: "owner"
 )
 
-User.create!(
-  account: jane.account,
+susette = User.create!(
+  account: account_one,
   first_name: "Susette",
   last_name: "StaffReader",
   email: "susettestaffreader@example.com",
@@ -43,6 +62,7 @@ User.create!(
 
 # Clients
 client_one = Client.create!(
+  account: account_one,
   user: jane,
   first_name: "Maya",
   last_name: "Rivera",
@@ -51,6 +71,7 @@ client_one = Client.create!(
 )
 
 client_two = Client.create!(
+  account: account_one,
   user: jane,
   first_name: "Caleb",
   last_name: "Brooks",
@@ -59,6 +80,7 @@ client_two = Client.create!(
 )
 
 client_three = Client.create!(
+  account: account_two,
   user: john,
   first_name: "Nina",
   last_name: "Patel",
@@ -93,22 +115,33 @@ follow_up = Service.create!(
 
 # Appointments
 appointment_one = Appointment.create!(
+  account: account_one,
+  user: jane,
+  resource: chair_one,
   client: client_one,
-  scheduled_at: 2.days.from_now
+  scheduled_at: 2.days.from_now,
+  status: "scheduled"
 )
 
 appointment_two = Appointment.create!(
+  account: account_one,
+  user: jane,
+  resource: chair_two,
   client: client_two,
-  scheduled_at: 4.days.from_now
+  scheduled_at: 4.days.from_now,
+  status: "scheduled"
 )
 
 appointment_three = Appointment.create!(
+  account: account_two,
+  user: john,
+  resource: john_chair,
   client: client_three,
-  scheduled_at: 1.week.from_now
+  scheduled_at: 1.week.from_now,
+  status: "scheduled"
 )
 
-# Appointment Services (join records)
-# Appointment 1: Deep Tissue + Custom Rug
+# Appointment Services
 AppointmentService.create!(
   appointment: appointment_one,
   service: deep_tissue
@@ -119,7 +152,6 @@ AppointmentService.create!(
   service: custom_rug
 )
 
-# Appointment 2: Custom Rug + Follow-up
 AppointmentService.create!(
   appointment: appointment_two,
   service: custom_rug
@@ -130,7 +162,6 @@ AppointmentService.create!(
   service: follow_up
 )
 
-# Appointment 3: Follow-up + Deep Tissue
 AppointmentService.create!(
   appointment: appointment_three,
   service: follow_up
@@ -150,12 +181,21 @@ Note.create!(
 
 Note.create!(
   client: client_two,
-  user: john,
+  user: jane,
   body: "Interested in earth tones and a bold geometric design."
 )
 
 Note.create!(
   client: client_three,
-  user: jane,
+  user: john,
   body: "Follow up about scheduling and preferred service length."
 )
+
+puts "Seeded:"
+puts "- #{Account.count} accounts"
+puts "- #{User.count} users"
+puts "- #{Resource.count} resources"
+puts "- #{Client.count} clients"
+puts "- #{Service.count} services"
+puts "- #{Appointment.count} appointments"
+puts "- #{Note.count} notes"
