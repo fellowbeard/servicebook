@@ -1,21 +1,22 @@
 module Api
   module V1
     class AppointmentsController < BaseController
+      before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_appointment, only: %i[show update destroy]
 
       def index
         appointments = Appointment.includes(:services)
-        render json: appointments.map(&:with_services)
+        render json: appointments.map { |appointment| AppointmentSerializer.new(appointment).as_json }
       end
 
       def show
-        render json: @appointment.with_services
+        render json: AppointmentSerializer.new(@appointment).as_json
       end
 
       def create
         appointment = Appointment.new(appointment_params)
         if appointment.save
-          render json: appointment.with_services, status: :created
+          render json: AppointmentSerializer.new(appointment).as_json, status: :created
         else
           render json: { errors: appointment.errors.full_messages }, status: :unprocessable_entity
         end
@@ -23,7 +24,7 @@ module Api
 
       def update
         if @appointment.update(appointment_params)
-          render json: @appointment.with_services
+          render json: AppointmentSerializer.new(@appointment).as_json
         else
           render json: { errors: @appointment.errors.full_messages }, status: :unprocessable_entity
         end
@@ -41,7 +42,7 @@ module Api
       end
 
       def appointment_params
-        params.require(:appointment).permit(:client_id, :scheduled_at, service_ids: [])
+        params.require(:appointment).permit(:client_id, :status, :scheduled_at, service_ids: [])
       end
     end
   end

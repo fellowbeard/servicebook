@@ -4,14 +4,10 @@ class Appointment < ApplicationRecord
   has_many :appointment_services, dependent: :destroy
   has_many :services, through: :appointment_services
 
-  def with_services
-    as_json.merge(
-      scheduled_at: convert_time,
-      services: services.as_json(
-        only: [:id, :title, :description, :duration_minutes, :price]
-      )
-    )
-  end
+  STATUS_OPTIONS = ["scheduled", "completed", "canceled"]
+
+  validates :scheduled_at, presence: true
+  validates :status, presence: true, inclusion: { in: STATUS_OPTIONS }
 
   def convert_time
     self.scheduled_at.strftime("%A, %B %d, %Y")

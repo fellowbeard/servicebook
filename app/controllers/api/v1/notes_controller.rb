@@ -1,21 +1,22 @@
 module Api
   module V1
     class NotesController < BaseController
+      before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_note, only: %i[show update destroy]
 
       def index
         notes = Note.all
-        render json: notes
+        render json: notes.map { |note| NoteSerializer.new(note).as_json }
       end
 
       def show
-        render json: @note
+        render json: NoteSerializer.new(@note).as_json
       end
 
       def create
         note = Note.new(note_params)
         if note.save
-          render json: note, status: :created
+          render json: NoteSerializer.new(note).as_json, status: :created
         else
           render json: { errors: note.errors.full_messages }, status: :unprocessable_entity
         end
@@ -23,7 +24,7 @@ module Api
 
       def update
         if @note.update(note_params)
-          render json: @note
+          render json: NoteSerializer.new(@note).as_json
         else
           render json: { errors: @note.errors.full_messages }, status: :unprocessable_entity
         end
@@ -41,7 +42,7 @@ module Api
       end
 
       def note_params
-        params.require(:note).permit(:client_id, :user_id, :body, :created_at)
+        params.require(:note).permit(:client_id, :user_id, :body)
       end
     end
   end

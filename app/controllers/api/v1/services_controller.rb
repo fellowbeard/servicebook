@@ -1,21 +1,22 @@
 module Api
   module V1
     class ServicesController < BaseController
+      before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_service, only: %i[show update destroy]
-
+      
       def index
         services = Service.all
-        render json: services
+        render json: services.map { |service| ServiceSerializer.new(service).as_json }
       end
 
       def show
-        render json: @service
+        render json: ServiceSerializer.new(@service).as_json
       end
 
       def create
         service = Service.new(service_params)
         if service.save
-          render json: service, status: :created
+          render json: ServiceSerializer.new(service).as_json, status: :created
         else
           render json: { errors: service.errors.full_messages }, status: :unprocessable_entity
         end
@@ -23,7 +24,7 @@ module Api
 
       def update
         if @service.update(service_params)
-          render json: @service
+          render json: ServiceSerializer.new(@service).as_json
         else
           render json: { errors: @service.errors.full_messages }, status: :unprocessable_entity
         end
@@ -41,7 +42,7 @@ module Api
       end
 
       def service_params
-        params.require(:service).permit(:client_id, :title, :price, :duration_minutes, :scheduled_at, :description)
+        params.require(:service).permit(:user_id, :title, :price, :duration_minutes, :description)
       end
     end
   end

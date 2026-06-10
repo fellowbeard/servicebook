@@ -31,3 +31,5 @@
 servicebook-frontend/node_modules/
 servicebook-frontend/dist/
 servicebook-frontend/.vite/
+# Ignore Vite dependencies and cache
+servicebook-frontend/.vite/deps/
