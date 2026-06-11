@@ -2,6 +2,9 @@ Rails.application.routes.draw do
   # API namespaced routes for frontend
   namespace :api do
     namespace :v1 do
+      post "login", to: "auth#login"
+      get "me", to: "users#me"
+
       resources :clients, only: [:index, :show, :create, :update, :destroy]
 
       resource :account, only: [:show, :update]

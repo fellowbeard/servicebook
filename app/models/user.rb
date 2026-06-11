@@ -1,6 +1,7 @@
 class User < ApplicationRecord
-  belongs_to :account, optional: true
-
+  has_secure_password
+  validates :email, uniqueness: true, presence: true
+  belongs_to :account
   has_many :services, dependent: :destroy
   has_many :notes, dependent: :destroy
   has_many :clients, dependent: :destroy

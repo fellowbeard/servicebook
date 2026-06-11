@@ -15,6 +15,10 @@ export default function AppointmentForm({
     existingAppointment?.services?.map((service) => service.id) || []
   );
 
+  const [resources, setResources] = useState([]);
+  const [resourceId, setResourceId] = useState(existingAppointment?.resource_id || "");
+  const [durationMinutes, setDurationMinutes] = useState(existingAppointment?.duration_minutes || "");
+
   const [clients, setClients] = useState([]);
   const [clientId, setClientId] = useState(existingAppointment?.client_id || initialClientId || "");
 
@@ -32,13 +36,23 @@ export default function AppointmentForm({
   const isNewClient = clientId === "new";
 
   useEffect(() => {
-    fetch(`/api/v1/users/${currentUser.id}/dashboard`)
+    fetch(`/api/v1/users/${currentUser.id}/dashboard`, {
+      headers: { "X-User-Id": currentUser.id },
+    })
       .then((res) => res.json())
       .then((data) => setClients(data.clients || []));
 
-    fetch("/api/v1/services")
+    fetch("/api/v1/services", {
+      headers: { "X-User-Id": currentUser.id },
+    })
       .then((res) => res.json())
       .then((data) => setServices(data));
+
+    fetch("/api/v1/resources", {
+      headers: { "X-User-Id": currentUser.id },
+    })
+      .then((res) => res.json())
+      .then((data) => setResources(data));
   }, [currentUser.id]);
 
   function handleNewClientChange(event) {
@@ -62,8 +76,10 @@ export default function AppointmentForm({
       body: JSON.stringify({
         appointment: {
           client_id: selectedClientId,
+          resource_id: resourceId,
           scheduled_at: scheduledAt,
           status,
+          duration_minutes: durationMinutes || null,
           service_ids: selectedServiceIds,
         },
       }),
@@ -106,6 +122,15 @@ export default function AppointmentForm({
       }
     });
   }
+
+  const selectedServices = services.filter((service) => selectedServiceIds.includes(service.id));
+  const selectedServiceDurationTotal = selectedServices.reduce(
+    (total, service) => total + Number(service.duration_minutes || 0),
+    0
+  );
+
+  const usesDefaultDuration =
+    durationMinutes === "" && selectedServices.length > 0 && selectedServiceDurationTotal === 0;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -155,7 +180,7 @@ export default function AppointmentForm({
               }
             }}
           />
-          {service.title} - ${service.price}
+          {service.title} - ${service.price} - {service.duration_minutes || 0} min
         </label>
       ))}
 
@@ -166,6 +191,34 @@ export default function AppointmentForm({
         value={scheduledAt}
         onChange={(event) => setScheduledAt(event.target.value)}
       />
+
+      <label htmlFor="resource">Resource</label>
+      <select id="resource" value={resourceId} onChange={(event) => setResourceId(event.target.value)}>
+        <option value="">Select a resource</option>
+
+        {resources.map((resource) => (
+          <option key={resource.id} value={resource.id}>
+            {resource.name}
+          </option>
+        ))}
+      </select>
+
+      <label htmlFor="duration_minutes">Duration Override Minutes</label>
+      <input
+        id="duration_minutes"
+        type="number"
+        min="1"
+        value={durationMinutes}
+        onChange={(event) => setDurationMinutes(event.target.value)}
+        placeholder="Leave blank to use service duration"
+      />
+
+      {usesDefaultDuration && (
+        <p className="warning">
+          This appointment has no service duration. ServiceBook will reserve the resource for 60 minutes unless you
+          enter a custom duration.
+        </p>
+      )}
 
       {isEditing && (
         <>

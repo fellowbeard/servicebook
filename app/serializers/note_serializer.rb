@@ -6,7 +6,6 @@ class NoteSerializer
   def as_json(*)
     {
       id: @note.id,
-      account_id: @note.account_id,
       client_id: @note.client_id,
       user_id: @note.user_id,
       body: @note.body,

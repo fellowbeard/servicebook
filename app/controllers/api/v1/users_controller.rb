@@ -76,6 +76,12 @@ module Api
         head :no_content
       end
 
+      def me
+        render json: current_user.as_json(
+          only: [:id, :account_id, :role, :first_name, :last_name, :email]
+        )
+      end
+
       private
 
       def set_user
@@ -83,7 +89,7 @@ module Api
       end
 
       def user_params
-        params.require(:user).permit(:first_name, :last_name, :email, :role)
+        params.require(:user).permit(:first_name, :last_name, :email, :role, :password, :password_confirmation)
       end
     end
   end

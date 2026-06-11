@@ -6,23 +6,29 @@ module Api
       private
 
       def current_user
-        @current_user ||= User.find_by(id: request.headers["X-User-Id"])
+        return @current_user if defined?(@current_user)
+
+        header = request.headers["Authorization"]
+        token = header&.split(" ")&.last
+        payload = JsonWebToken.decode(token)
+
+        @current_user = User.find_by(id: payload["user_id"]) if payload
       end
 
       def require_current_user
         return if current_user
 
-        render json: { error: "You must be logged in." }, status: :unauthorized
+        render json: { error: "Unauthorized" }, status: :unauthorized
+      end
+
+      def current_account
+        current_user.account
       end
 
       def require_write_access
         return if current_user.can_write?
 
         render json: { error: "Read-only users cannot make changes." }, status: :forbidden
-      end
-
-      def current_account
-        current_user.account
       end
 
       def require_owner

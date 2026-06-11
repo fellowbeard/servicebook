@@ -14,8 +14,8 @@ module Api
       end
 
       def create
-        client = current_user.clients.new(client_params)
-        client.account = current_user.account       
+        client = current_account.clients.new(client_params)
+        client.user = current_user      
 
         if client.save
           render json: ClientSerializer.new(client).as_json, status: :created
@@ -40,7 +40,7 @@ module Api
       private
       
       def set_client
-        @client = Client.find(params[:id])
+        @client = current_account.clients.find(params[:id])
       end
 
       def client_params
