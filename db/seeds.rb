@@ -41,7 +41,9 @@ jane = User.create!(
   first_name: "Jane",
   last_name: "Stuff",
   email: "janestuff@example.com",
-  role: "owner"
+  role: "owner",
+  password: "123456",
+  password_confirmation: "123456"
 )
 
 john = User.create!(
@@ -49,7 +51,9 @@ john = User.create!(
   first_name: "John",
   last_name: "Denver",
   email: "johndenver@example.com",
-  role: "owner"
+  role: "owner",
+  password: "123456",
+  password_confirmation: "123456"
 )
 
 susette = User.create!(
@@ -57,7 +61,9 @@ susette = User.create!(
   first_name: "Susette",
   last_name: "StaffReader",
   email: "susettestaffreader@example.com",
-  role: "read_only"
+  role: "read_only",
+  password: "123456",
+  password_confirmation: "123456"
 )
 
 # Clients
@@ -90,6 +96,7 @@ client_three = Client.create!(
 
 # Services
 deep_tissue = Service.create!(
+  account: account_one,
   user: jane,
   title: "Deep Tissue Massage",
   description: "Focused deep tissue session for shoulder and back tension.",
@@ -98,6 +105,7 @@ deep_tissue = Service.create!(
 )
 
 custom_rug = Service.create!(
+  account: account_one,
   user: jane,
   title: "Custom Rug Consultation",
   description: "Initial consultation for a custom tufted rug design.",
@@ -106,6 +114,7 @@ custom_rug = Service.create!(
 )
 
 follow_up = Service.create!(
+  account: account_two,
   user: john,
   title: "Follow-up Appointment",
   description: "Follow-up service appointment and client check-in.",
@@ -114,7 +123,7 @@ follow_up = Service.create!(
 )
 
 # Appointments
-appointment_one = Appointment.create!(
+appointment_one = Appointment.new(
   account: account_one,
   user: jane,
   resource: chair_one,
@@ -123,7 +132,10 @@ appointment_one = Appointment.create!(
   status: "scheduled"
 )
 
-appointment_two = Appointment.create!(
+appointment_one.services = [deep_tissue, custom_rug]
+appointment_one.save!
+
+appointment_two = Appointment.new(
   account: account_one,
   user: jane,
   resource: chair_two,
@@ -132,7 +144,10 @@ appointment_two = Appointment.create!(
   status: "scheduled"
 )
 
-appointment_three = Appointment.create!(
+appointment_two.services = [custom_rug]
+appointment_two.save!
+
+appointment_three = Appointment.new(
   account: account_two,
   user: john,
   resource: john_chair,
@@ -141,36 +156,8 @@ appointment_three = Appointment.create!(
   status: "scheduled"
 )
 
-# Appointment Services
-AppointmentService.create!(
-  appointment: appointment_one,
-  service: deep_tissue
-)
-
-AppointmentService.create!(
-  appointment: appointment_one,
-  service: custom_rug
-)
-
-AppointmentService.create!(
-  appointment: appointment_two,
-  service: custom_rug
-)
-
-AppointmentService.create!(
-  appointment: appointment_two,
-  service: follow_up
-)
-
-AppointmentService.create!(
-  appointment: appointment_three,
-  service: follow_up
-)
-
-AppointmentService.create!(
-  appointment: appointment_three,
-  service: deep_tissue
-)
+appointment_three.services = [follow_up]
+appointment_three.save!
 
 # Notes
 Note.create!(
@@ -198,4 +185,5 @@ puts "- #{Resource.count} resources"
 puts "- #{Client.count} clients"
 puts "- #{Service.count} services"
 puts "- #{Appointment.count} appointments"
+puts "- #{AppointmentService.count} appointment services"
 puts "- #{Note.count} notes"

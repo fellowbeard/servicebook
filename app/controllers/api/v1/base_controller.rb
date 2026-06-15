@@ -10,7 +10,7 @@ module Api
 
         header = request.headers["Authorization"]
         token = header&.split(" ")&.last
-        payload = JsonWebToken.decode(token)
+        payload = JwtService.decode(token)
 
         @current_user = User.find_by(id: payload["user_id"]) if payload
       end
