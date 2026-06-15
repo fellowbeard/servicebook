@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authHeaders } from "../utils/authHeaders";
+import { authHeaders } from "../../utils/authHeaders.js";
 
 export default function NewClient({ currentUser }) {
   const navigate = useNavigate();

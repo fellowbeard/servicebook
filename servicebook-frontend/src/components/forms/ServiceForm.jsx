@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authHeaders } from "../utils/authHeaders";
+import { authHeaders } from "../../utils/authHeaders.js";
 
 export default function ServiceForm({
   currentUser,

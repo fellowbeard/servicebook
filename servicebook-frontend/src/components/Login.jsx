@@ -51,6 +51,12 @@ export default function Login({ setCurrentUser }) {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
+        <input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
 
         <button type="submit">Log in</button>
       </form>
