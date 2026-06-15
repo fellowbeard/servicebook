@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authHeaders } from "../../utils/authHeaders.js";
+import { authHeaders } from "../../utils/auth.js";
 
 export default function ServiceForm({
   currentUser,
@@ -64,6 +64,7 @@ export default function ServiceForm({
 
     fetch(`/api/v1/services/${existingService.id}`, {
       method: "DELETE",
+      headers: authHeaders(),
     }).then(() => {
       onServiceDeleted?.(existingService.id);
       setService(blankService);

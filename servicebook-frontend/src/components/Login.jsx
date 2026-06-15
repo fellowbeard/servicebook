@@ -1,11 +1,12 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { setToken } from "../utils/auth.js";
 
 export default function Login({ setCurrentUser }) {
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null)
-  const navigate = useNavigate()
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -28,10 +29,8 @@ export default function Login({ setCurrentUser }) {
         return res.json();
       })
       .then((data) => {
-        localStorage.setItem("token", data.token);
-
+        setToken(data.token);
         setCurrentUser(data.user);
-
         navigate("/userdashboard");
       })
       .catch((err) => {
@@ -45,23 +44,13 @@ export default function Login({ setCurrentUser }) {
       <form onSubmit={handleSubmit}>
         <label htmlFor="email">Email</label>
 
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-        />
+        <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
 
         <button type="submit">Log in</button>
       </form>
 
       {error && <p>{error}</p>}
     </main>
-  )
+  );
 }

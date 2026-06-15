@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppointmentForm from "./forms/AppointmentForm.jsx";
-import { authHeaders } from "../utils/authHeaders";
+import { authHeaders } from "../utils/auth.js";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import UserDashboard from "./components/UserDashboard.jsx";
 import Login from "./components/Login.jsx";
+import LogOut from "./components/LogOut.jsx";
 import ClientCard from "./components/ClientCard.jsx";
 import NewClient from "./components/forms/NewClient.jsx";
 import NewAppointment from "./components/forms/NewAppointment.jsx";
@@ -14,7 +15,13 @@ function App() {
   return (
     <>
       <nav>
-        <Link to="/">Login</Link> | <Link to="/userdashboard">Dashboard</Link>
+        {currentUser ? (
+          <>
+            <Link to="/userdashboard">Dashboard</Link> | <LogOut setCurrentUser={setCurrentUser} />
+          </>
+        ) : (
+          <Link to="/">Login</Link>
+        )}
       </nav>
 
       <Routes>
