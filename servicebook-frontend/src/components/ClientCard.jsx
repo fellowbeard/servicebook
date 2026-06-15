@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppointmentForm from "./forms/AppointmentForm.jsx";
+import { authHeaders } from "../utils/authHeaders";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();
@@ -27,10 +28,7 @@ export default function ClientCard({ currentUser }) {
 
     fetch("/api/v1/notes", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": currentUser.id,
-      },
+      headers: authHeaders(),
       body: JSON.stringify({
         note: {
           client_id: client.id,

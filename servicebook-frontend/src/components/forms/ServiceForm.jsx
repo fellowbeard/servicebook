@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { authHeaders } from "../utils/authHeaders";
 
 export default function ServiceForm({
   currentUser,
@@ -39,10 +40,7 @@ export default function ServiceForm({
 
     fetch(url, {
       method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": currentUser.id,
-      },
+      headers: authHeaders(),
       body: JSON.stringify({
         service: {
           ...service,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authHeaders } from "utils/authHeaders";
 
 export default function AppointmentForm({
   currentUser,
@@ -37,19 +38,19 @@ export default function AppointmentForm({
 
   useEffect(() => {
     fetch(`/api/v1/users/${currentUser.id}/dashboard`, {
-      headers: { "X-User-Id": currentUser.id },
+      headers: authHeaders(),
     })
       .then((res) => res.json())
       .then((data) => setClients(data.clients || []));
 
     fetch("/api/v1/services", {
-      headers: { "X-User-Id": currentUser.id },
+      headers: authHeaders(),
     })
       .then((res) => res.json())
       .then((data) => setServices(data));
 
     fetch("/api/v1/resources", {
-      headers: { "X-User-Id": currentUser.id },
+      headers: authHeaders(),
     })
       .then((res) => res.json())
       .then((data) => setResources(data));
@@ -69,10 +70,7 @@ export default function AppointmentForm({
 
     return fetch(url, {
       method,
-      headers: {
-        "Content-Type": "application/json",
-        "X-User-Id": currentUser.id,
-      },
+      headers: authHeaders(),
       body: JSON.stringify({
         appointment: {
           client_id: selectedClientId,
@@ -92,10 +90,7 @@ export default function AppointmentForm({
     if (isNewClient) {
       fetch("/api/v1/clients", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-User-Id": currentUser.id,
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           client: {
             ...newClient,

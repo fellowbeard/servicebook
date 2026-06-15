@@ -3,26 +3,40 @@ import { useNavigate } from 'react-router-dom'
 
 export default function Login({ setCurrentUser }) {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null)
   const navigate = useNavigate()
 
   function handleSubmit(event) {
-    event.preventDefault()
+    event.preventDefault();
 
-    fetch(`/api/v1/users`)
-      .then((res) => res.json())
-      .then((users) => {
-        const foundUser = users.find((user) => user.email === email)
-
-        if (!foundUser) {
-          setError('No user with that email bruh')
-          return
+    fetch("/api/v1/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Invalid email or password");
         }
 
-        setCurrentUser(foundUser)
-        navigate('/userdashboard')
+        return res.json();
       })
-      .catch((err) => setError(err.message || 'Fetch error'))
+      .then((data) => {
+        localStorage.setItem("token", data.token);
+
+        setCurrentUser(data.user);
+
+        navigate("/userdashboard");
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
   }
 
   return (
