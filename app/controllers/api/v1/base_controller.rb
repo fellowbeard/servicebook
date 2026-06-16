@@ -1,41 +1,37 @@
-module Api
-  module V1
-    class BaseController < ActionController::API
-      before_action :require_current_user
+class Api::V1::BaseController < ActionController::API
+  before_action :require_current_user
 
-      private
+  private
 
-      def current_user
-        return @current_user if defined?(@current_user)
+  def current_user
+    return @current_user if defined?(@current_user)
 
-        header = request.headers["Authorization"]
-        token = header&.split(" ")&.last
-        payload = JwtService.decode(token)
+    header = request.headers['Authorization']
+    token = header&.split(' ')&.last
+    payload = JwtService.decode(token)
 
-        @current_user = User.find_by(id: payload["user_id"]) if payload
-      end
+    @current_user = User.find_by(id: payload['user_id']) if payload
+  end
 
-      def require_current_user
-        return if current_user
+  def require_current_user
+    return if current_user
 
-        render json: { error: "Unauthorized" }, status: :unauthorized
-      end
+    render json: { error: 'Unauthorized' }, status: :unauthorized
+  end
 
-      def current_account
-        current_user.account
-      end
+  def current_account
+    current_user.account
+  end
 
-      def require_write_access
-        return if current_user.can_write?
+  def require_write_access
+    return if current_user.can_write?
 
-        render json: { error: "Read-only users cannot make changes." }, status: :forbidden
-      end
+    render json: { error: 'Read-only users cannot make changes.' }, status: :forbidden
+  end
 
-      def require_owner
-        return if current_user.owner?
+  def require_owner
+    return if current_user.owner?
 
-        render json: { error: "Only account owners can do that." }, status: :forbidden
-      end
-    end
+    render json: { error: 'Only account owners can do that.' }, status: :forbidden
   end
 end

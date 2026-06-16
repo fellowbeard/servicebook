@@ -7,7 +7,7 @@ class Client < ApplicationRecord
   has_many :services, through: :appointment_services
   has_many :notes, dependent: :destroy
 
-  scope :for_user, ->(user) {
+  scope :for_user, lambda { |user|
     where(user_id: user.id)
   }
 end
