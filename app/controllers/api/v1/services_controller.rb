@@ -1,4 +1,4 @@
-class Api::V1::ServicesController < BaseController
+class Api::V1::ServicesController < Api::V1::BaseController
   before_action :require_current_user
   before_action :require_write_access, only: [:create, :update, :destroy]
   before_action :set_service, only: [:show, :update, :destroy]

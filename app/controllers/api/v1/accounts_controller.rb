@@ -1,4 +1,4 @@
-class Api::V1::AccountsController < BaseController
+class Api::V1::AccountsController < Api::V1::BaseController
   before_action :require_owner, only: [:update]
 
   def show

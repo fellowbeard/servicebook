@@ -69,22 +69,32 @@ class Appointment < ApplicationRecord
   end
 
   def resource_is_available
-    return if resource_id.blank?
-    return if scheduled_at.blank?
-    return if canceled?
-
-    overlapping_appointment = account.appointments
-                                     .includes(:services)
-                                     .where(resource_id: resource_id)
-                                     .where.not(id: id)
-                                     .where.not(status: 'canceled')
-                                     .detect do |appointment|
-                                       scheduled_at < appointment.ends_at &&
-                                         ends_at > appointment.scheduled_at
-                                     end
-
-    return unless overlapping_appointment
+    return unless should_check_resource_availability?
+    return unless overlapping_appointment?
 
     errors.add(:base, 'Resource is already booked at the scheduled time')
+  end
+
+  def should_check_resource_availability?
+    resource_id.present? && scheduled_at.present? && !canceled?
+  end
+
+  def overlapping_appointment?
+    possible_overlapping_appointments.any? do |appointment|
+      overlaps_with?(appointment)
+    end
+  end
+
+  def possible_overlapping_appointments
+    account.appointments
+           .includes(:services)
+           .where(resource_id: resource_id)
+           .where.not(id: id)
+           .where.not(status: 'canceled')
+  end
+
+  def overlaps_with?(appointment)
+    scheduled_at < appointment.ends_at &&
+      ends_at > appointment.scheduled_at
   end
 end

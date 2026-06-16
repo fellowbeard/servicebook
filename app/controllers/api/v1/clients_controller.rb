@@ -1,4 +1,4 @@
-class Api::V1::ClientsController < BaseController
+class Api::V1::ClientsController < Api::V1::BaseController
   before_action :require_write_access, only: [:create, :update, :destroy]
   before_action :set_client, only: [:show, :update, :destroy]
 

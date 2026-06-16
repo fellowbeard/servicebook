@@ -144,6 +144,10 @@ Rails/HasManyOrHasOneDependent:
 Rails/Exit:
   Enabled: true
 
+Rails/NotNullColumn:
+  Exclude:
+    - "db/migrate/**/*"
+
 Rails/Output:
   Enabled: true
 

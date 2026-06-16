@@ -1,4 +1,4 @@
-class Api::V1::AppointmentsController < BaseController
+class Api::V1::AppointmentsController < Api::V1::BaseController
   before_action :require_write_access, only: [:create, :update, :destroy]
   before_action :set_appointment, only: [:show, :update, :destroy]
 
@@ -13,11 +13,7 @@ class Api::V1::AppointmentsController < BaseController
   end
 
   def create
-    appointment = current_account.appointments.new(appointment_params.except(:service_ids))
-    appointment.user = current_user
-    appointment.client = find_account_client
-    appointment.resource = find_account_resource if appointment_params[:resource_id].present?
-    appointment.services = find_account_services
+    appointment = build_appointment
 
     if appointment.save
       render json: AppointmentSerializer.new(appointment).as_json, status: :created
@@ -27,10 +23,8 @@ class Api::V1::AppointmentsController < BaseController
   end
 
   def update
-    @appointment.assign_attributes(appointment_params.except(:service_ids))
-    @appointment.client = find_account_client if appointment_params[:client_id].present?
-    @appointment.resource = find_account_resource if appointment_params[:resource_id].present?
-    @appointment.services = find_account_services if appointment_params.key?(:service_ids)
+    @appointment.assign_attributes(appointment_attributes)
+    assign_update_associations
 
     if @appointment.save
       render json: AppointmentSerializer.new(@appointment).as_json
@@ -48,6 +42,25 @@ class Api::V1::AppointmentsController < BaseController
 
   def set_appointment
     @appointment = current_account.appointments.find(params[:id])
+  end
+
+  def build_appointment
+    appointment = current_account.appointments.new(appointment_attributes)
+    appointment.user = current_user
+    appointment.client = find_account_client
+    appointment.resource = find_account_resource if appointment_params[:resource_id].present?
+    appointment.services = find_account_services
+    appointment
+  end
+
+  def assign_update_associations
+    @appointment.client = find_account_client if appointment_params[:client_id].present?
+    @appointment.resource = find_account_resource if appointment_params[:resource_id].present?
+    @appointment.services = find_account_services if appointment_params.key?(:service_ids)
+  end
+
+  def appointment_attributes
+    appointment_params.except(:service_ids)
   end
 
   def find_account_client

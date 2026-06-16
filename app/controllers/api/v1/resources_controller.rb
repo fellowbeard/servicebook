@@ -1,4 +1,4 @@
-class Api::V1::ResourcesController < BaseController
+class Api::V1::ResourcesController < Api::V1::BaseController
   before_action :require_write_access, only: [:create, :update, :destroy]
   before_action :set_resource, only: [:show, :update, :destroy]
 
