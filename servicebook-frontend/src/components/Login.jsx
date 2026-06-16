@@ -1,28 +1,41 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { setToken } from "../utils/auth.js";
 
 export default function Login({ setCurrentUser }) {
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState(null)
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   function handleSubmit(event) {
-    event.preventDefault()
+    event.preventDefault();
 
-    fetch(`/api/v1/users`)
-      .then((res) => res.json())
-      .then((users) => {
-        const foundUser = users.find((user) => user.email === email)
-
-        if (!foundUser) {
-          setError('No user with that email bruh')
-          return
+    fetch("/api/v1/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Invalid email or password");
         }
 
-        setCurrentUser(foundUser)
-        navigate('/userdashboard')
+        return res.json();
       })
-      .catch((err) => setError(err.message || 'Fetch error'))
+      .then((data) => {
+        setToken(data.token);
+        setCurrentUser(data.user);
+        navigate("/userdashboard");
+      })
+      .catch((err) => {
+        setError(err.message);
+      });
   }
 
   return (
@@ -31,17 +44,13 @@ export default function Login({ setCurrentUser }) {
       <form onSubmit={handleSubmit}>
         <label htmlFor="email">Email</label>
 
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-        />
+        <input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
+        <input id="password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
 
         <button type="submit">Log in</button>
       </form>
 
       {error && <p>{error}</p>}
     </main>
-  )
+  );
 }

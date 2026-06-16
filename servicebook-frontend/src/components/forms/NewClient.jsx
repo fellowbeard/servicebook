@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authHeaders } from "../../utils/auth.js";
 
 export default function NewClient({ currentUser }) {
   const navigate = useNavigate();
@@ -23,9 +24,7 @@ export default function NewClient({ currentUser }) {
 
     fetch("/api/v1/clients", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: authHeaders(),
       body: JSON.stringify({
         client: {
           ...client,

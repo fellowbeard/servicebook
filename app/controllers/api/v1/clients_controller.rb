@@ -4,12 +4,8 @@ module Api
       before_action :require_write_access, only: [:create, :update, :destroy]
       before_action :set_client, only: [:show, :update, :destroy]
 
-      def set_client
-        @client = Client.find(params[:id])
-      end
-
       def index
-        clients = Client.all.limit(100)
+        clients = current_account.clients.limit(100)
         render json: clients.map { |client| ClientSerializer.new(client).as_json }
       end
 
@@ -18,7 +14,9 @@ module Api
       end
 
       def create
-        client = Client.new(client_params)
+        client = current_account.clients.new(client_params)
+        client.user = current_user      
+
         if client.save
           render json: ClientSerializer.new(client).as_json, status: :created
         else
@@ -40,9 +38,13 @@ module Api
       end
 
       private
+      
+      def set_client
+        @client = current_account.clients.find(params[:id])
+      end
 
       def client_params
-        params.require(:client).permit(:first_name, :last_name, :email, :phone, :user_id)
+        params.require(:client).permit(:first_name, :last_name, :email, :phone)
       end
     end
   end

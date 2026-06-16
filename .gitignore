@@ -33,3 +33,7 @@ servicebook-frontend/dist/
 servicebook-frontend/.vite/
 # Ignore Vite dependencies and cache
 servicebook-frontend/.vite/deps/
+
+# Ignore key files for decrypting credentials and more.
+/config/*.key
+

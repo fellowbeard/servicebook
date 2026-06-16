@@ -2,10 +2,11 @@ module Api
   module V1
     class AppointmentsController < BaseController
       before_action :require_write_access, only: [:create, :update, :destroy]
-      before_action :set_appointment, only: %i[show update destroy]
+      before_action :set_appointment, only: [:show, :update, :destroy]
 
       def index
-        appointments = Appointment.includes(:services)
+        appointments = current_account.appointments.includes(:client, :resource, :services)
+
         render json: appointments.map { |appointment| AppointmentSerializer.new(appointment).as_json }
       end
 
@@ -14,7 +15,12 @@ module Api
       end
 
       def create
-        appointment = Appointment.new(appointment_params)
+        appointment = current_account.appointments.new(appointment_params.except(:service_ids))
+        appointment.user = current_user
+        appointment.client = find_account_client
+        appointment.resource = find_account_resource if appointment_params[:resource_id].present?
+        appointment.services = find_account_services
+
         if appointment.save
           render json: AppointmentSerializer.new(appointment).as_json, status: :created
         else
@@ -23,7 +29,12 @@ module Api
       end
 
       def update
-        if @appointment.update(appointment_params)
+        @appointment.assign_attributes(appointment_params.except(:service_ids))
+        @appointment.client = find_account_client if appointment_params[:client_id].present?
+        @appointment.resource = find_account_resource if appointment_params[:resource_id].present?
+        @appointment.services = find_account_services if appointment_params.key?(:service_ids)
+
+        if @appointment.save
           render json: AppointmentSerializer.new(@appointment).as_json
         else
           render json: { errors: @appointment.errors.full_messages }, status: :unprocessable_entity
@@ -38,11 +49,31 @@ module Api
       private
 
       def set_appointment
-        @appointment = Appointment.find(params[:id])
+        @appointment = current_account.appointments.find(params[:id])
+      end
+
+      def find_account_client
+        current_account.clients.find(appointment_params[:client_id])
+      end
+
+      def find_account_resource
+        current_account.resources.find(appointment_params[:resource_id])
+      end
+
+      def find_account_services
+        service_ids = appointment_params[:service_ids] || []
+        current_user.services.where(id: service_ids)
       end
 
       def appointment_params
-        params.require(:appointment).permit(:client_id, :status, :scheduled_at, service_ids: [])
+        params.require(:appointment).permit(
+          :client_id,
+          :resource_id,
+          :scheduled_at,
+          :status,
+          :duration_minutes,
+          service_ids: []
+        )
       end
     end
   end

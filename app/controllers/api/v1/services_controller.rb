@@ -1,8 +1,9 @@
 module Api
   module V1
     class ServicesController < BaseController
+      before_action :require_current_user
       before_action :require_write_access, only: [:create, :update, :destroy]
-      before_action :set_service, only: %i[show update destroy]
+      before_action :set_service, only: [:show, :update, :destroy]
       
       def index
         services = Service.all
@@ -14,7 +15,7 @@ module Api
       end
 
       def create
-        service = Service.new(service_params)
+        service = current_user.services.new(service_params)
         if service.save
           render json: ServiceSerializer.new(service).as_json, status: :created
         else
@@ -42,7 +43,7 @@ module Api
       end
 
       def service_params
-        params.require(:service).permit(:user_id, :title, :price, :duration_minutes, :description)
+        params.require(:service).permit(:title, :price, :duration_minutes, :description)
       end
     end
   end

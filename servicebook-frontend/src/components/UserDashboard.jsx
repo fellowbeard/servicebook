@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { authHeaders } from "../utils/auth.js";
 import ServiceForm from "./forms/ServiceForm.jsx";
+import ResourceForm from "./forms/ResourceForm.jsx";
 import AppointmentCalendar from "./AppointmentCalendar.jsx";
 
 export default function UserDashboard({ currentUser }) {
@@ -8,9 +10,13 @@ export default function UserDashboard({ currentUser }) {
   const navigate = useNavigate();
   const [showServiceForm, setShowServiceForm] = useState(false);
   const [editingService, setEditingService] = useState(null);
+  const [showResourceForm, setShowResourceForm] = useState(false);
+  const [editingResource, setEditingResource] = useState(null);
 
   useEffect(() => {
-    fetch(`/api/v1/users/${currentUser.id}/dashboard`)
+    fetch(`/api/v1/users/${currentUser.id}/dashboard`, {
+      headers: authHeaders(),
+    })
       .then((res) => res.json())
       .then((data) => setDashboard(data));
   }, [currentUser.id]);
@@ -35,7 +41,7 @@ export default function UserDashboard({ currentUser }) {
 
   return (
     <main>
-      <h1>Dashboard</h1>
+      <h1>{dashboard.account?.business_name} Dashboard</h1>
 
       <h2>
         Welcome, {dashboard.user?.first_name} {dashboard.user?.last_name}
@@ -43,7 +49,6 @@ export default function UserDashboard({ currentUser }) {
 
       <div>
         <button onClick={handleNewAppointment}>New Appointment</button>
-
         <button onClick={handleNewClient}>New Client</button>
       </div>
 
@@ -70,6 +75,8 @@ export default function UserDashboard({ currentUser }) {
           </option>
         ))}
       </select>
+
+      <h3>Services</h3>
 
       <button
         onClick={() => {
@@ -116,8 +123,6 @@ export default function UserDashboard({ currentUser }) {
         />
       )}
 
-      <h3>Services</h3>
-
       <div>
         {dashboard.services?.length > 0 ? (
           dashboard.services.map((service) => (
@@ -137,12 +142,80 @@ export default function UserDashboard({ currentUser }) {
           <p>No services yet.</p>
         )}
       </div>
+
+      <h3>Resources</h3>
+
+      <button
+        onClick={() => {
+          setEditingResource(null);
+          setShowResourceForm(!showResourceForm);
+        }}
+      >
+        {showResourceForm ? "Cancel" : "New Resource"}
+      </button>
+
+      {showResourceForm && (
+        <ResourceForm
+          key={editingResource ? editingResource.id : "new"}
+          existingResource={editingResource}
+          onResourceCreated={(createdResource) => {
+            setDashboard({
+              ...dashboard,
+              resources: [...(dashboard.resources || []), createdResource],
+            });
+
+            setShowResourceForm(false);
+          }}
+          onResourceUpdated={(updatedResource) => {
+            setDashboard({
+              ...dashboard,
+              resources: dashboard.resources.map((resource) =>
+                resource.id === updatedResource.id ? updatedResource : resource
+              ),
+            });
+
+            setEditingResource(null);
+            setShowResourceForm(false);
+          }}
+          onResourceDeleted={(deletedResourceId) => {
+            setDashboard({
+              ...dashboard,
+              resources: dashboard.resources.filter((resource) => resource.id !== deletedResourceId),
+            });
+
+            setEditingResource(null);
+            setShowResourceForm(false);
+          }}
+        />
+      )}
+
+      <div>
+        {dashboard.resources?.length > 0 ? (
+          dashboard.resources.map((resource) => (
+            <div key={resource.id}>
+              <strong>{resource.name}</strong>
+              <button
+                onClick={() => {
+                  setEditingResource(resource);
+                  setShowResourceForm(true);
+                }}
+              >
+                Edit
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No resources yet.</p>
+        )}
+      </div>
+
       <AppointmentCalendar
         appointments={dashboard.appointments || []}
         currentUser={currentUser}
         onAppointmentUpdate={() => {
-          // Refresh dashboard data
-          fetch(`/api/v1/users/${currentUser.id}/dashboard`)
+          fetch(`/api/v1/users/${currentUser.id}/dashboard`, {
+            headers: authHeaders(),
+          })
             .then((res) => res.json())
             .then((data) => setDashboard(data));
         }}

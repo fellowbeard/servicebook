@@ -1,4 +1,4 @@
-require 'faker'
+require "faker"
 
 # Destroy existing records
 AppointmentService.destroy_all
@@ -6,10 +6,11 @@ Appointment.destroy_all
 Note.destroy_all
 Service.destroy_all
 Client.destroy_all
+Resource.destroy_all
 User.destroy_all
 Account.destroy_all
 
-# Account
+# Accounts
 account_one = Account.create!(
   business_name: "Jane Stuff's Stuff and Things"
 )
@@ -18,31 +19,56 @@ account_two = Account.create!(
   business_name: "John Denver's Sing Songs and Stuff"
 )
 
+# Resources
+chair_one = Resource.create!(
+  account: account_one,
+  name: "Chair 1"
+)
+
+chair_two = Resource.create!(
+  account: account_one,
+  name: "Chair 2"
+)
+
+john_chair = Resource.create!(
+  account: account_two,
+  name: "Chair 1"
+)
+
 # Users
 jane = User.create!(
   account: account_one,
-  first_name: "Jane", 
-  last_name: "Stuff", 
-  email: "janestuff@example.com"
+  first_name: "Jane",
+  last_name: "Stuff",
+  email: "janestuff@example.com",
+  role: "owner",
+  password: "123456",
+  password_confirmation: "123456"
 )
 
 john = User.create!(
   account: account_two,
-  first_name: "John", 
-  last_name: "Denver", 
-  email: "johndenver@example.com"
+  first_name: "John",
+  last_name: "Denver",
+  email: "johndenver@example.com",
+  role: "owner",
+  password: "123456",
+  password_confirmation: "123456"
 )
 
-User.create!(
-  account: jane.account,
+susette = User.create!(
+  account: account_one,
   first_name: "Susette",
   last_name: "StaffReader",
   email: "susettestaffreader@example.com",
-  role: "read_only"
+  role: "read_only",
+  password: "123456",
+  password_confirmation: "123456"
 )
 
 # Clients
 client_one = Client.create!(
+  account: account_one,
   user: jane,
   first_name: "Maya",
   last_name: "Rivera",
@@ -51,6 +77,7 @@ client_one = Client.create!(
 )
 
 client_two = Client.create!(
+  account: account_one,
   user: jane,
   first_name: "Caleb",
   last_name: "Brooks",
@@ -59,6 +86,7 @@ client_two = Client.create!(
 )
 
 client_three = Client.create!(
+  account: account_two,
   user: john,
   first_name: "Nina",
   last_name: "Patel",
@@ -68,6 +96,7 @@ client_three = Client.create!(
 
 # Services
 deep_tissue = Service.create!(
+  account: account_one,
   user: jane,
   title: "Deep Tissue Massage",
   description: "Focused deep tissue session for shoulder and back tension.",
@@ -76,6 +105,7 @@ deep_tissue = Service.create!(
 )
 
 custom_rug = Service.create!(
+  account: account_one,
   user: jane,
   title: "Custom Rug Consultation",
   description: "Initial consultation for a custom tufted rug design.",
@@ -84,6 +114,7 @@ custom_rug = Service.create!(
 )
 
 follow_up = Service.create!(
+  account: account_two,
   user: john,
   title: "Follow-up Appointment",
   description: "Follow-up service appointment and client check-in.",
@@ -92,54 +123,41 @@ follow_up = Service.create!(
 )
 
 # Appointments
-appointment_one = Appointment.create!(
+appointment_one = Appointment.new(
+  account: account_one,
+  user: jane,
+  resource: chair_one,
   client: client_one,
-  scheduled_at: 2.days.from_now
+  scheduled_at: 2.days.from_now,
+  status: "scheduled"
 )
 
-appointment_two = Appointment.create!(
+appointment_one.services = [deep_tissue, custom_rug]
+appointment_one.save!
+
+appointment_two = Appointment.new(
+  account: account_one,
+  user: jane,
+  resource: chair_two,
   client: client_two,
-  scheduled_at: 4.days.from_now
+  scheduled_at: 4.days.from_now,
+  status: "scheduled"
 )
 
-appointment_three = Appointment.create!(
+appointment_two.services = [custom_rug]
+appointment_two.save!
+
+appointment_three = Appointment.new(
+  account: account_two,
+  user: john,
+  resource: john_chair,
   client: client_three,
-  scheduled_at: 1.week.from_now
+  scheduled_at: 1.week.from_now,
+  status: "scheduled"
 )
 
-# Appointment Services (join records)
-# Appointment 1: Deep Tissue + Custom Rug
-AppointmentService.create!(
-  appointment: appointment_one,
-  service: deep_tissue
-)
-
-AppointmentService.create!(
-  appointment: appointment_one,
-  service: custom_rug
-)
-
-# Appointment 2: Custom Rug + Follow-up
-AppointmentService.create!(
-  appointment: appointment_two,
-  service: custom_rug
-)
-
-AppointmentService.create!(
-  appointment: appointment_two,
-  service: follow_up
-)
-
-# Appointment 3: Follow-up + Deep Tissue
-AppointmentService.create!(
-  appointment: appointment_three,
-  service: follow_up
-)
-
-AppointmentService.create!(
-  appointment: appointment_three,
-  service: deep_tissue
-)
+appointment_three.services = [follow_up]
+appointment_three.save!
 
 # Notes
 Note.create!(
@@ -150,12 +168,22 @@ Note.create!(
 
 Note.create!(
   client: client_two,
-  user: john,
+  user: jane,
   body: "Interested in earth tones and a bold geometric design."
 )
 
 Note.create!(
   client: client_three,
-  user: jane,
+  user: john,
   body: "Follow up about scheduling and preferred service length."
 )
+
+puts "Seeded:"
+puts "- #{Account.count} accounts"
+puts "- #{User.count} users"
+puts "- #{Resource.count} resources"
+puts "- #{Client.count} clients"
+puts "- #{Service.count} services"
+puts "- #{Appointment.count} appointments"
+puts "- #{AppointmentService.count} appointment services"
+puts "- #{Note.count} notes"
