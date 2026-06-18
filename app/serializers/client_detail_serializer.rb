@@ -19,7 +19,7 @@ class ClientDetailSerializer
 
       appointments: @client.appointments.order(scheduled_at: :desc).map do |appointment|
         AppointmentSerializer.new(appointment).as_json
-      end
+      end,
     }
   end
 end

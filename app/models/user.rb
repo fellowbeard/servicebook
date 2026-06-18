@@ -7,21 +7,20 @@ class User < ApplicationRecord
   has_many :clients, dependent: :destroy
   has_many :appointments, dependent: :nullify
 
-
-  ROLES = ["owner", "staff", "read_only"]
+  ROLES = ['owner', 'staff', 'read_only'].freeze
 
   validates :role, inclusion: { in: ROLES }
 
   def owner?
-    role == "owner"
+    role == 'owner'
   end
 
   def staff?
-    role == "staff"
+    role == 'staff'
   end
 
   def read_only?
-    role == "read_only"
+    role == 'read_only'
   end
 
   def can_write?

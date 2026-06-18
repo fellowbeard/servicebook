@@ -10,7 +10,7 @@ class ServiceSerializer
       title: @service.title,
       price: @service.price,
       duration_minutes: @service.duration_minutes,
-      description: @service.description
+      description: @service.description,
     }
   end
 end
