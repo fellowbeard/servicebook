@@ -38,7 +38,6 @@ export default function ClientCard({ currentUser }) {
       body: JSON.stringify({
         note: {
           client_id: client.id,
-          user_id: currentUser.id,
           body: noteBody,
         },
       }),

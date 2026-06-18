@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authHeaders } from "../../utils/auth.js";
 
-export default function NewClient({ currentUser }) {
+export default function NewClient() {
   const navigate = useNavigate();
 
   const [client, setClient] = useState({
@@ -28,7 +28,6 @@ export default function NewClient({ currentUser }) {
       body: JSON.stringify({
         client: {
           ...client,
-          user_id: currentUser.id,
         },
       }),
     })

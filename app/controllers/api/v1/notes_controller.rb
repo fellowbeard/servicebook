@@ -1,10 +1,9 @@
-class Api::V1::NotesController < BaseController
-  before_action :require_current_user
+class Api::V1::NotesController < Api::V1::BaseController
   before_action :require_write_access, only: [:create, :update, :destroy]
   before_action :set_note, only: [:show, :update, :destroy]
 
   def index
-    notes = Note.all
+    notes = current_account.notes
     render json: notes.map { |note| NoteSerializer.new(note).as_json }
   end
 
@@ -37,7 +36,7 @@ class Api::V1::NotesController < BaseController
   private
 
   def set_note
-    @note = Note.find(params[:id])
+    @note = current_account.notes.find(params[:id])
   end
 
   def note_params

@@ -64,21 +64,8 @@ export default function AppointmentForm({
   }
 
   function saveAppointment(selectedClientId) {
-    console.log("saveAppointment called with:", selectedClientId);
-
     const url = isEditing ? `/api/v1/appointments/${existingAppointment.id}` : "/api/v1/appointments";
     const method = isEditing ? "PATCH" : "POST";
-
-    console.log("Posting appointment:", {
-      url,
-      method,
-      client_id: selectedClientId,
-      resource_id: resourceId,
-      scheduled_at: scheduledAt,
-      status,
-      duration_minutes: durationMinutes || null,
-      service_ids: selectedServiceIds,
-    });
 
     return fetch(url, {
       method,
@@ -93,19 +80,10 @@ export default function AppointmentForm({
           service_ids: selectedServiceIds,
         },
       }),
-    }).then((res) => {
-      console.log("Appointment status:", res.status);
-
-      return res.json().then((data) => {
-        console.log("Appointment response:", data);
-        return data;
-      });
-    });
+    }).then((res) => res.json());
   }
 
   function handleSubmit(event) {
-    console.log("AppointmentForm submitted");
-
     event.preventDefault();
 
     if (isNewClient) {
@@ -115,7 +93,6 @@ export default function AppointmentForm({
         body: JSON.stringify({
           client: {
             ...newClient,
-            user_id: currentUser.id,
           },
         }),
       })
