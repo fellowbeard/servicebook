@@ -41,7 +41,10 @@ gem 'rack-cors'
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
   gem 'debug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'factory_bot_rails'
   gem 'faker', '~> 2.0'
+  gem 'pry'
+  gem 'pry-byebug'
   gem 'rspec-rails', '~> 8.0'
 end
 
