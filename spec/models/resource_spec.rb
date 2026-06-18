@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Resource, type: :model do
-  it "validates presence of a name" do
+  it 'validates presence of a name' do
     resource = Resource.new
 
     expect(resource).not_to be_valid
