@@ -66,7 +66,7 @@ class Api::V1::UsersController < Api::V1::BaseController
   end
 
   def services_scope
-    current_user.services.alphabetical
+    current_account.services.alphabetical
   end
 
   def serialized_services

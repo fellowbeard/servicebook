@@ -55,7 +55,7 @@ class Appointment < ApplicationRecord
   private
 
   def must_have_at_least_one_service
-    return if services.any?
+    return if services.to_a.any?
 
     errors.add(:services, 'must include at least one service')
   end

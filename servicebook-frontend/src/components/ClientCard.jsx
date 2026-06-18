@@ -1,21 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppointmentForm from "./forms/AppointmentForm.jsx";
 import { authHeaders } from "../utils/auth.js";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [client, setClient] = useState(null);
   const [noteBody, setNoteBody] = useState("");
   const [editingAppointment, setEditingAppointment] = useState(null);
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch(`/api/v1/clients/${id}`)
+  const fetchClient = useCallback(() => {
+    fetch(`/api/v1/clients/${id}`, {
+      headers: authHeaders(),
+    })
       .then((res) => res.json())
       .then((data) => setClient(data));
   }, [id]);
+
+  useEffect(() => {
+    fetchClient();
+  }, [fetchClient]);
 
   if (!client) return <p>Loading client...</p>;
 
@@ -48,6 +54,11 @@ export default function ClientCard({ currentUser }) {
       });
   }
 
+  function handleAppointmentUpdated() {
+    setEditingAppointment(null);
+    fetchClient();
+  }
+
   return (
     <section className="client-card">
       <h2>
@@ -59,7 +70,6 @@ export default function ClientCard({ currentUser }) {
       <h3>Service History</h3>
       <div>
         {client.appointments?.length > 0 ? (
-          // sort appointments by scheduled_at (most recent first)
           [...client.appointments]
             .sort((a, b) => new Date(b.scheduled_at) - new Date(a.scheduled_at))
             .map((appointment) => (
@@ -109,13 +119,7 @@ export default function ClientCard({ currentUser }) {
         <AppointmentForm
           currentUser={currentUser}
           existingAppointment={editingAppointment}
-          onAppointmentUpdated={() => {
-            setEditingAppointment(null);
-            // Refresh client data
-            fetch(`/api/v1/clients/${id}`)
-              .then((res) => res.json())
-              .then((data) => setClient(data));
-          }}
+          onAppointmentUpdated={handleAppointmentUpdated}
         />
       )}
 

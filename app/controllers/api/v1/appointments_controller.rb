@@ -73,7 +73,8 @@ class Api::V1::AppointmentsController < Api::V1::BaseController
 
   def find_account_services
     service_ids = appointment_params[:service_ids] || []
-    current_user.services.where(id: service_ids)
+    binding.pry
+    current_account.services.where(id: service_ids)
   end
 
   def appointment_params
