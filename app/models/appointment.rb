@@ -7,7 +7,7 @@ class Appointment < ApplicationRecord
   has_many :appointment_services, dependent: :destroy
   has_many :services, through: :appointment_services
 
-  STATUS_OPTIONS = ["scheduled", "completed", "canceled"]
+  STATUS_OPTIONS = ['scheduled', 'completed', 'canceled'].freeze
   UNKNOWN_DURATION_MINUTES = 60
 
   validates :scheduled_at, presence: true
@@ -18,7 +18,7 @@ class Appointment < ApplicationRecord
   validate :resource_is_available
 
   def convert_time
-    scheduled_at.strftime("%A, %B %d, %Y")
+    scheduled_at.strftime('%A, %B %d, %Y')
   end
 
   def service_duration_minutes
@@ -37,15 +37,15 @@ class Appointment < ApplicationRecord
   end
 
   def scheduled?
-    status == "scheduled"
+    status == 'scheduled'
   end
 
   def completed?
-    status == "completed"
+    status == 'completed'
   end
 
   def canceled?
-    status == "canceled"
+    status == 'canceled'
   end
 
   def uses_default_duration?
@@ -57,7 +57,7 @@ class Appointment < ApplicationRecord
   def must_have_at_least_one_service
     return if services.any?
 
-    errors.add(:services, "must include at least one service")
+    errors.add(:services, 'must include at least one service')
   end
 
   def scheduled_at_cannot_be_in_the_past
@@ -69,22 +69,32 @@ class Appointment < ApplicationRecord
   end
 
   def resource_is_available
-    return if resource_id.blank?
-    return if scheduled_at.blank?
-    return if canceled?
+    return unless should_check_resource_availability?
+    return unless overlapping_appointment?
 
-    overlapping_appointment = account.appointments
-      .includes(:services)
-      .where(resource_id: resource_id)
-      .where.not(id: id)
-      .where.not(status: "canceled")
-      .detect do |appointment|
-        scheduled_at < appointment.ends_at &&
-          ends_at > appointment.scheduled_at
-      end
+    errors.add(:base, 'Resource is already booked at the scheduled time')
+  end
 
-    return unless overlapping_appointment
+  def should_check_resource_availability?
+    resource_id.present? && scheduled_at.present? && !canceled?
+  end
 
-    errors.add(:base, "Resource is already booked at the scheduled time")
+  def overlapping_appointment?
+    possible_overlapping_appointments.any? do |appointment|
+      overlaps_with?(appointment)
+    end
+  end
+
+  def possible_overlapping_appointments
+    account.appointments
+           .includes(:services)
+           .where(resource_id: resource_id)
+           .where.not(id: id)
+           .where.not(status: 'canceled')
+  end
+
+  def overlaps_with?(appointment)
+    scheduled_at < appointment.ends_at &&
+      ends_at > appointment.scheduled_at
   end
 end

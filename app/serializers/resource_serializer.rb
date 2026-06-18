@@ -6,7 +6,7 @@ class ResourceSerializer
   def as_json(*)
     {
       id: @resource.id,
-      name: @resource.name
+      name: @resource.name,
     }
   end
 end

@@ -1,4 +1,4 @@
-require "faker"
+require 'faker'
 
 # Destroy existing records
 AppointmentService.destroy_all
@@ -22,75 +22,75 @@ account_two = Account.create!(
 # Resources
 chair_one = Resource.create!(
   account: account_one,
-  name: "Chair 1"
+  name: 'Chair 1'
 )
 
 chair_two = Resource.create!(
   account: account_one,
-  name: "Chair 2"
+  name: 'Chair 2'
 )
 
 john_chair = Resource.create!(
   account: account_two,
-  name: "Chair 1"
+  name: 'Chair 1'
 )
 
 # Users
 jane = User.create!(
   account: account_one,
-  first_name: "Jane",
-  last_name: "Stuff",
-  email: "janestuff@example.com",
-  role: "owner",
-  password: "123456",
-  password_confirmation: "123456"
+  first_name: 'Jane',
+  last_name: 'Stuff',
+  email: 'janestuff@example.com',
+  role: 'owner',
+  password: '123456',
+  password_confirmation: '123456'
 )
 
 john = User.create!(
   account: account_two,
-  first_name: "John",
-  last_name: "Denver",
-  email: "johndenver@example.com",
-  role: "owner",
-  password: "123456",
-  password_confirmation: "123456"
+  first_name: 'John',
+  last_name: 'Denver',
+  email: 'johndenver@example.com',
+  role: 'owner',
+  password: '123456',
+  password_confirmation: '123456'
 )
 
-susette = User.create!(
+User.create!(
   account: account_one,
-  first_name: "Susette",
-  last_name: "StaffReader",
-  email: "susettestaffreader@example.com",
-  role: "read_only",
-  password: "123456",
-  password_confirmation: "123456"
+  first_name: 'Susette',
+  last_name: 'StaffReader',
+  email: 'susettestaffreader@example.com',
+  role: 'read_only',
+  password: '123456',
+  password_confirmation: '123456'
 )
 
 # Clients
 client_one = Client.create!(
   account: account_one,
   user: jane,
-  first_name: "Maya",
-  last_name: "Rivera",
-  email: "maya.rivera@example.com",
+  first_name: 'Maya',
+  last_name: 'Rivera',
+  email: 'maya.rivera@example.com',
   phone: Faker::PhoneNumber.phone_number
 )
 
 client_two = Client.create!(
   account: account_one,
   user: jane,
-  first_name: "Caleb",
-  last_name: "Brooks",
-  email: "caleb.brooks@example.com",
+  first_name: 'Caleb',
+  last_name: 'Brooks',
+  email: 'caleb.brooks@example.com',
   phone: Faker::PhoneNumber.phone_number
 )
 
 client_three = Client.create!(
   account: account_two,
   user: john,
-  first_name: "Nina",
-  last_name: "Patel",
-  email: "nina.patel@example.com",
+  first_name: 'Nina',
+  last_name: 'Patel',
+  email: 'nina.patel@example.com',
   phone: Faker::PhoneNumber.phone_number
 )
 
@@ -98,8 +98,8 @@ client_three = Client.create!(
 deep_tissue = Service.create!(
   account: account_one,
   user: jane,
-  title: "Deep Tissue Massage",
-  description: "Focused deep tissue session for shoulder and back tension.",
+  title: 'Deep Tissue Massage',
+  description: 'Focused deep tissue session for shoulder and back tension.',
   duration_minutes: 60,
   price: 95.00
 )
@@ -107,8 +107,8 @@ deep_tissue = Service.create!(
 custom_rug = Service.create!(
   account: account_one,
   user: jane,
-  title: "Custom Rug Consultation",
-  description: "Initial consultation for a custom tufted rug design.",
+  title: 'Custom Rug Consultation',
+  description: 'Initial consultation for a custom tufted rug design.',
   duration_minutes: 45,
   price: 50.00
 )
@@ -116,8 +116,8 @@ custom_rug = Service.create!(
 follow_up = Service.create!(
   account: account_two,
   user: john,
-  title: "Follow-up Appointment",
-  description: "Follow-up service appointment and client check-in.",
+  title: 'Follow-up Appointment',
+  description: 'Follow-up service appointment and client check-in.',
   duration_minutes: 30,
   price: 40.00
 )
@@ -129,7 +129,7 @@ appointment_one = Appointment.new(
   resource: chair_one,
   client: client_one,
   scheduled_at: 2.days.from_now,
-  status: "scheduled"
+  status: 'scheduled'
 )
 
 appointment_one.services = [deep_tissue, custom_rug]
@@ -141,7 +141,7 @@ appointment_two = Appointment.new(
   resource: chair_two,
   client: client_two,
   scheduled_at: 4.days.from_now,
-  status: "scheduled"
+  status: 'scheduled'
 )
 
 appointment_two.services = [custom_rug]
@@ -153,7 +153,7 @@ appointment_three = Appointment.new(
   resource: john_chair,
   client: client_three,
   scheduled_at: 1.week.from_now,
-  status: "scheduled"
+  status: 'scheduled'
 )
 
 appointment_three.services = [follow_up]
@@ -163,27 +163,27 @@ appointment_three.save!
 Note.create!(
   client: client_one,
   user: jane,
-  body: "Client prefers afternoon appointments and firm pressure."
+  body: 'Client prefers afternoon appointments and firm pressure.'
 )
 
 Note.create!(
   client: client_two,
   user: jane,
-  body: "Interested in earth tones and a bold geometric design."
+  body: 'Interested in earth tones and a bold geometric design.'
 )
 
 Note.create!(
   client: client_three,
   user: john,
-  body: "Follow up about scheduling and preferred service length."
+  body: 'Follow up about scheduling and preferred service length.'
 )
 
-puts "Seeded:"
-puts "- #{Account.count} accounts"
-puts "- #{User.count} users"
-puts "- #{Resource.count} resources"
-puts "- #{Client.count} clients"
-puts "- #{Service.count} services"
-puts "- #{Appointment.count} appointments"
-puts "- #{AppointmentService.count} appointment services"
-puts "- #{Note.count} notes"
+Rails.logger.debug 'Seeded:'
+Rails.logger.debug "- #{Account.count} accounts"
+Rails.logger.debug "- #{User.count} users"
+Rails.logger.debug "- #{Resource.count} resources"
+Rails.logger.debug "- #{Client.count} clients"
+Rails.logger.debug "- #{Service.count} services"
+Rails.logger.debug "- #{Appointment.count} appointments"
+Rails.logger.debug "- #{AppointmentService.count} appointment services"
+Rails.logger.debug "- #{Note.count} notes"

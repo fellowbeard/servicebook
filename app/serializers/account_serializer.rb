@@ -9,7 +9,7 @@ class AccountSerializer
       business_name: @account.business_name,
       resources: @account.resources.map do |resource|
         ResourceSerializer.new(resource).as_json
-      end
+      end,
     }
   end
 end
