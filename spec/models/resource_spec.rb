@@ -1,5 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe Resource, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it 'validates presence of a name' do
+    resource = Resource.new
+
+    expect(resource).not_to be_valid
+    expect(resource.errors[:name]).to include("can't be blank")
+  end
 end
