@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authHeaders } from "../../utils/auth.js";
-import { parseApiResponse } from "../../utils/api";
+import { apiFetch } from "../../utils/api.js";
 
 export default function AppointmentForm({
   currentUser,
@@ -25,8 +24,8 @@ export default function AppointmentForm({
   const [clientId, setClientId] = useState(existingAppointment?.client_id || initialClientId || "");
 
   const [scheduledAt, setScheduledAt] = useState(existingAppointment?.scheduled_at || "");
-
   const [status, setStatus] = useState(existingAppointment?.status || "scheduled");
+  const [error, setError] = useState("");
 
   const [newClient, setNewClient] = useState({
     first_name: "",
@@ -38,25 +37,25 @@ export default function AppointmentForm({
   const isNewClient = clientId === "new";
 
   useEffect(() => {
-    fetch(`/api/v1/users/${currentUser.id}/dashboard`, { headers: authHeaders() })
-      .then(parseApiResponse)
-      .then(({ ok, data }) => {
-        if (ok) setClients(data.clients || []);
-        else setClients([]);
+    apiFetch(`/api/v1/users/${currentUser.id}/dashboard`)
+      .then((data) => setClients(data.clients || []))
+      .catch((error) => {
+        setClients([]);
+        setError(error.message);
       });
 
-    fetch("/api/v1/services", { headers: authHeaders() })
-      .then(parseApiResponse)
-      .then(({ ok, data }) => {
-        if (ok) setServices(data);
-        else setServices([]);
+    apiFetch("/api/v1/services")
+      .then((data) => setServices(data))
+      .catch((error) => {
+        setServices([]);
+        setError(error.message);
       });
 
-    fetch("/api/v1/resources", { headers: authHeaders() })
-      .then(parseApiResponse)
-      .then(({ ok, data }) => {
-        if (ok) setResources(data);
-        else setResources([]);
+    apiFetch("/api/v1/resources")
+      .then((data) => setResources(data))
+      .catch((error) => {
+        setResources([]);
+        setError(error.message);
       });
   }, [currentUser.id]);
 
@@ -67,14 +66,12 @@ export default function AppointmentForm({
     });
   }
 
-  const [error, setError] = useState(null);
-
   function saveAppointment(selectedClientId) {
     const url = isEditing ? `/api/v1/appointments/${existingAppointment.id}` : "/api/v1/appointments";
     const method = isEditing ? "PATCH" : "POST";
-    return fetch(url, {
+
+    return apiFetch(url, {
       method,
-      headers: authHeaders(),
       body: JSON.stringify({
         appointment: {
           client_id: selectedClientId,
@@ -85,40 +82,31 @@ export default function AppointmentForm({
           service_ids: selectedServiceIds,
         },
       }),
-    })
-      .then(parseApiResponse)
-      .then(({ ok, data, error: apiError }) => {
-        if (!ok) throw new Error(apiError.message);
-        return data;
-      })
-      .catch((err) => {
-        setError(err.message);
-        throw err;
-      });
+    });
   }
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
     if (isNewClient) {
-      fetch("/api/v1/clients", {
+      apiFetch("/api/v1/clients", {
         method: "POST",
-        headers: authHeaders(),
         body: JSON.stringify({
           client: {
             ...newClient,
           },
         }),
       })
-        .then(parseApiResponse)
-        .then(({ ok, data }) => {
-          if (!ok) return;
-          return saveAppointment(data.id).then(() => data);
+        .then((createdClient) => {
+          return saveAppointment(createdClient.id).then(() => createdClient);
         })
         .then((createdClient) => {
-          if (createdClient) navigate(`/clients/${createdClient.id}`);
+          navigate(`/clients/${createdClient.id}`);
         })
-        .catch(() => { });
+        .catch((error) => {
+          setError(error.message);
+        });
 
       return;
     }
@@ -131,10 +119,13 @@ export default function AppointmentForm({
           navigate(`/clients/${clientId}`);
         }
       })
-      .catch(() => { });
+      .catch((error) => {
+        setError(error.message);
+      });
   }
 
   const selectedServices = services.filter((service) => selectedServiceIds.includes(service.id));
+
   const selectedServiceDurationTotal = selectedServices.reduce(
     (total, service) => total + Number(service.duration_minutes || 0),
     0
@@ -146,6 +137,8 @@ export default function AppointmentForm({
   return (
     <form onSubmit={handleSubmit}>
       <h2>{isEditing ? "Edit Appointment" : "New Appointment"}</h2>
+
+      {error && <p className="error">{error}</p>}
 
       <label htmlFor="client">Client</label>
       <select id="client" value={clientId} onChange={(event) => setClientId(event.target.value)}>

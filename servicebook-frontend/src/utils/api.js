@@ -1,53 +1,56 @@
-export async function parseApiResponse(res) {
-  let data = null;
+import { authHeaders } from "./auth.js";
+
+export async function apiFetch(url, options = {}) {
+  const useAuth = options.auth !== false;
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(useAuth ? authHeaders() : { "Content-Type": "application/json" }),
+      ...(options.headers || {}),
+    },
+  });
+
+  const data = await parseJson(response);
+
+  if (!response.ok) {
+    throw buildApiError(response, data);
+  }
+
+  return data;
+}
+
+async function parseJson(response) {
   try {
-    data = await res.json();
-  } catch (err) {
-    // Non-JSON responses
+    return await response.json();
+  } catch {
+    return null;
+  }
+}
+
+function buildApiError(response, data) {
+  if (data?.error) {
     return {
-      ok: res.ok,
-      data: null,
-      error: { message: res.statusText || 'Request failed' },
+      status: response.status,
+      code: data.error.code || "request_failed",
+      message: data.error.message || "Request failed.",
+      details: data.error.details || null,
     };
   }
 
-  if (res.ok) {
-    return { ok: true, data, error: null };
-  }
-
-  // Try known shapes: { error: { message, details } } or { errors: [..] }
-  let message = 'Request failed';
-  let details = null;
-
-  if (data) {
-    if (data.error) {
-      message = data.error.message || String(data.error);
-      details = data.error.details;
-    } else if (data.errors) {
-      message = Array.isArray(data.errors) ? data.errors.join(', ') : String(data.errors);
-    } else if (typeof data === 'string') {
-      message = data;
-    }
+  if (data?.errors) {
+    return {
+      status: response.status,
+      code: "validation_failed",
+      message: Array.isArray(data.errors) ? data.errors.join(", ") : "Validation failed.",
+      details: data.errors,
+    };
   }
 
   return {
-    ok: false,
-    data,
-    error: {
-      message,
-      details,
-    },
+    status: response.status,
+    code: "request_failed",
+    message: response.statusText || "Request failed.",
+    details: null,
   };
-}
-
-export function extractFieldErrors(details) {
-  // details is expected to be an object of arrays: { field: ['msg1', 'msg2'] }
-  if (!details || typeof details !== 'object') return null;
-  const fieldErrors = {};
-  Object.entries(details).forEach(([field, val]) => {
-    if (Array.isArray(val)) fieldErrors[field] = val;
-    else if (typeof val === 'string') fieldErrors[field] = [val];
-    else fieldErrors[field] = [String(val)];
-  });
-  return fieldErrors;
 }

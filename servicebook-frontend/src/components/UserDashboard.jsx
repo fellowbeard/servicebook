@@ -1,27 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { authHeaders } from "../utils/auth.js";
-import { parseApiResponse } from "../utils/api.js";
+import { apiFetch } from "../utils/api.js";
 import ServiceForm from "./forms/ServiceForm.jsx";
 import ResourceForm from "./forms/ResourceForm.jsx";
 import AppointmentCalendar from "./AppointmentCalendar.jsx";
 
 export default function UserDashboard({ currentUser }) {
-  const [dashboard, setDashboard] = useState(null);
   const navigate = useNavigate();
+  const [dashboard, setDashboard] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showServiceForm, setShowServiceForm] = useState(false);
   const [editingService, setEditingService] = useState(null);
   const [showResourceForm, setShowResourceForm] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
 
-  useEffect(() => {
-    fetch(`/api/v1/users/${currentUser.id}/dashboard`, { headers: authHeaders() })
-      .then(parseApiResponse)
-      .then(({ ok, data }) => {
-        if (ok) setDashboard(data);
-        else setDashboard(null);
+  const fetchDashboard = useCallback(() => {
+    apiFetch(`/api/v1/users/${currentUser.id}/dashboard`)
+      .then((data) => {
+        setDashboard(data);
+        setErrorMessage("");
+      })
+      .catch((error) => {
+        setDashboard(null);
+        setErrorMessage(error.message);
       });
   }, [currentUser.id]);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
 
   function handleClientSelect(event) {
     const clientId = event.target.value;
@@ -39,10 +46,12 @@ export default function UserDashboard({ currentUser }) {
     navigate("/clients/new");
   }
 
+  if (!dashboard && errorMessage) return <p className="error">{errorMessage}</p>;
   if (!dashboard) return <p>Loading...</p>;
 
   return (
     <main>
+      {errorMessage && <p className="error">{errorMessage}</p>}
       <h1>{dashboard.account?.business_name} Dashboard</h1>
 
       <h2>
@@ -214,13 +223,7 @@ export default function UserDashboard({ currentUser }) {
       <AppointmentCalendar
         appointments={dashboard.appointments || []}
         currentUser={currentUser}
-        onAppointmentUpdate={() => {
-          fetch(`/api/v1/users/${currentUser.id}/dashboard`, { headers: authHeaders() })
-            .then(parseApiResponse)
-            .then(({ ok, data }) => {
-              if (ok) setDashboard(data);
-            });
-        }}
+        onAppointmentUpdate={fetchDashboard}
       />
     </main>
   );
