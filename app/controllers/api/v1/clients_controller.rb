@@ -18,7 +18,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
     if client.save
       render json: ClientSerializer.new(client).as_json, status: :created
     else
-      render json: { errors: client.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(client)
     end
   end
 
@@ -26,7 +26,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
     if @client.update(client_params)
       render json: ClientDetailSerializer.new(@client).as_json
     else
-      render json: { errors: @client.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@client)
     end
   end
 

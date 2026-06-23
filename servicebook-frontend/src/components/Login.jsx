@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { setToken } from "../utils/auth.js";
+import { parseApiResponse } from "../utils/api.js";
 
 export default function Login({ setCurrentUser }) {
   const [email, setEmail] = useState("");
@@ -21,14 +22,9 @@ export default function Login({ setCurrentUser }) {
         password,
       }),
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Invalid email or password");
-        }
-
-        return res.json();
-      })
-      .then((data) => {
+      .then(parseApiResponse)
+      .then(({ ok, data, error }) => {
+        if (!ok) throw new Error(error.message);
         setToken(data.token);
         setCurrentUser(data.user);
         navigate("/userdashboard");

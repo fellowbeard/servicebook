@@ -9,7 +9,7 @@ class Api::V1::AccountsController < Api::V1::BaseController
     if current_account.update(account_params)
       render json: AccountSerializer.new(current_account).as_json
     else
-      render json: { errors: current_account.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(current_account)
     end
   end
 

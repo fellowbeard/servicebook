@@ -18,7 +18,7 @@ class Api::V1::ServicesController < Api::V1::BaseController
     if service.save
       render json: ServiceSerializer.new(service).as_json, status: :created
     else
-      render json: { errors: service.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(service)
     end
   end
 
@@ -26,7 +26,7 @@ class Api::V1::ServicesController < Api::V1::BaseController
     if @service.update(service_params)
       render json: ServiceSerializer.new(@service).as_json
     else
-      render json: { errors: @service.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@service)
     end
   end
 
@@ -38,7 +38,7 @@ class Api::V1::ServicesController < Api::V1::BaseController
   private
 
   def set_service
-    @service = Service.find(params[:id])
+    @service = current_account.services.find(params[:id])
   end
 
   def service_params

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authHeaders } from "../../utils/auth.js";
+import { parseApiResponse } from "../../utils/api";
 
 export default function AppointmentForm({
   currentUser,
@@ -37,23 +38,26 @@ export default function AppointmentForm({
   const isNewClient = clientId === "new";
 
   useEffect(() => {
-    fetch(`/api/v1/users/${currentUser.id}/dashboard`, {
-      headers: authHeaders(),
-    })
-      .then((res) => res.json())
-      .then((data) => setClients(data.clients || []));
+    fetch(`/api/v1/users/${currentUser.id}/dashboard`, { headers: authHeaders() })
+      .then(parseApiResponse)
+      .then(({ ok, data }) => {
+        if (ok) setClients(data.clients || []);
+        else setClients([]);
+      });
 
-    fetch("/api/v1/services", {
-      headers: authHeaders(),
-    })
-      .then((res) => res.json())
-      .then((data) => setServices(data));
+    fetch("/api/v1/services", { headers: authHeaders() })
+      .then(parseApiResponse)
+      .then(({ ok, data }) => {
+        if (ok) setServices(data);
+        else setServices([]);
+      });
 
-    fetch("/api/v1/resources", {
-      headers: authHeaders(),
-    })
-      .then((res) => res.json())
-      .then((data) => setResources(data));
+    fetch("/api/v1/resources", { headers: authHeaders() })
+      .then(parseApiResponse)
+      .then(({ ok, data }) => {
+        if (ok) setResources(data);
+        else setResources([]);
+      });
   }, [currentUser.id]);
 
   function handleNewClientChange(event) {
@@ -63,10 +67,11 @@ export default function AppointmentForm({
     });
   }
 
+  const [error, setError] = useState(null);
+
   function saveAppointment(selectedClientId) {
     const url = isEditing ? `/api/v1/appointments/${existingAppointment.id}` : "/api/v1/appointments";
     const method = isEditing ? "PATCH" : "POST";
-
     return fetch(url, {
       method,
       headers: authHeaders(),
@@ -80,7 +85,16 @@ export default function AppointmentForm({
           service_ids: selectedServiceIds,
         },
       }),
-    }).then((res) => res.json());
+    })
+      .then(parseApiResponse)
+      .then(({ ok, data, error: apiError }) => {
+        if (!ok) throw new Error(apiError.message);
+        return data;
+      })
+      .catch((err) => {
+        setError(err.message);
+        throw err;
+      });
   }
 
   function handleSubmit(event) {
@@ -96,24 +110,28 @@ export default function AppointmentForm({
           },
         }),
       })
-        .then((res) => res.json())
-        .then((createdClient) => {
-          return saveAppointment(createdClient.id).then(() => createdClient);
+        .then(parseApiResponse)
+        .then(({ ok, data }) => {
+          if (!ok) return;
+          return saveAppointment(data.id).then(() => data);
         })
         .then((createdClient) => {
-          navigate(`/clients/${createdClient.id}`);
-        });
+          if (createdClient) navigate(`/clients/${createdClient.id}`);
+        })
+        .catch(() => { });
 
       return;
     }
 
-    saveAppointment(clientId).then(() => {
-      if (isEditing && onAppointmentUpdated) {
-        onAppointmentUpdated();
-      } else {
-        navigate(`/clients/${clientId}`);
-      }
-    });
+    saveAppointment(clientId)
+      .then(() => {
+        if (isEditing && onAppointmentUpdated) {
+          onAppointmentUpdated();
+        } else {
+          navigate(`/clients/${clientId}`);
+        }
+      })
+      .catch(() => { });
   }
 
   const selectedServices = services.filter((service) => selectedServiceIds.includes(service.id));

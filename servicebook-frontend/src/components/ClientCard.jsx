@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppointmentForm from "./forms/AppointmentForm.jsx";
 import { authHeaders } from "../utils/auth.js";
+import { parseApiResponse, extractFieldErrors } from "../utils/api";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();
@@ -21,11 +22,10 @@ export default function ClientCard({ currentUser }) {
   const [editingAppointment, setEditingAppointment] = useState(null);
 
   const fetchClient = useCallback(() => {
-    fetch(`/api/v1/clients/${id}`, {
-      headers: authHeaders(),
-    })
-      .then((res) => res.json())
-      .then((data) => {
+    fetch(`/api/v1/clients/${id}`, { headers: authHeaders() })
+      .then(parseApiResponse)
+      .then(({ ok, data }) => {
+        if (!ok) return;
         setClient(data);
         setClientForm({
           first_name: data.first_name || "",
@@ -59,9 +59,14 @@ export default function ClientCard({ currentUser }) {
         client: clientForm,
       }),
     })
-      .then((res) => res.json())
-      .then((updatedClient) => {
-        setClient(updatedClient);
+      .then(parseApiResponse)
+      .then(({ ok, data, error }) => {
+        if (!ok) {
+          // Could show validation errors here
+          return;
+        }
+
+        setClient(data);
         setIsEditingClient(false);
       });
   }
@@ -83,11 +88,16 @@ export default function ClientCard({ currentUser }) {
         },
       }),
     })
-      .then((res) => res.json())
-      .then((newNote) => {
+      .then(parseApiResponse)
+      .then(({ ok, data, error }) => {
+        if (!ok) {
+          // Could surface note errors
+          return;
+        }
+
         setClient({
           ...client,
-          notes: [...(client.notes || []), newNote],
+          notes: [...(client.notes || []), data],
         });
 
         setNoteBody("");
@@ -111,11 +121,15 @@ export default function ClientCard({ currentUser }) {
         },
       }),
     })
-      .then((res) => res.json())
-      .then((updatedNote) => {
+      .then(parseApiResponse)
+      .then(({ ok, data, error }) => {
+        if (!ok) {
+          return;
+        }
+
         setClient({
           ...client,
-          notes: client.notes.map((note) => (note.id === updatedNote.id ? updatedNote : note)),
+          notes: client.notes.map((note) => (note.id === data.id ? data : note)),
         });
 
         setEditingNoteId(null);

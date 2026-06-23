@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authHeaders } from "../../utils/auth.js";
+import { parseApiResponse, extractFieldErrors } from "../../utils/api";
 
 export default function NewClient() {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ export default function NewClient() {
     email: "",
     phone: "",
   });
+
+  const [error, setError] = useState(null);
 
   function handleChange(event) {
     setClient({
@@ -31,9 +34,15 @@ export default function NewClient() {
         },
       }),
     })
-      .then((res) => res.json())
-      .then((createdClient) => {
-        navigate(`/clients/${createdClient.id}`);
+      .then(parseApiResponse)
+      .then(({ ok, data, error: apiError }) => {
+        if (!ok) {
+          const fieldErrors = extractFieldErrors(apiError.details);
+          setError(fieldErrors ? Object.values(fieldErrors).flat().join(', ') : apiError.message);
+          return;
+        }
+
+        navigate(`/clients/${data.id}`);
       });
   }
 

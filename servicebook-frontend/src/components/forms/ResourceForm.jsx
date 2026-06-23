@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authHeaders } from "../../utils/auth";
+import { parseApiResponse, extractFieldErrors } from "../../utils/api";
 
 export default function ResourceForm({
   existingResource = null,
@@ -43,15 +44,12 @@ export default function ResourceForm({
         resource,
       }),
     })
-      .then((res) => {
-        return res.json().then((data) => ({
-          ok: res.ok,
-          data,
-        }));
-      })
-      .then(({ ok, data }) => {
+      .then(parseApiResponse)
+      .then(({ ok, data, error }) => {
         if (!ok) {
-          setError(data.errors?.join(", ") || "Resource could not be saved.");
+          const fieldErrors = extractFieldErrors(error.details);
+          if (fieldErrors && fieldErrors.name) setError(fieldErrors.name.join(', '));
+          else setError(error.message || 'Resource could not be saved.');
           return;
         }
 

@@ -51,6 +51,6 @@ RSpec.describe 'Api::V1::Dashboard', type: :request do
     get '/api/v1/dashboard'
 
     expect(response).to have_http_status(:unauthorized)
-    expect(json['error']).to eq('Unauthorized')
+    expect(json.dig('error', 'message')).to eq('You must be logged in to do that.')
   end
 end

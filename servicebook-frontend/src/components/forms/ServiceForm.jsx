@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { authHeaders } from "../../utils/auth.js";
+import { parseApiResponse, extractFieldErrors } from "../../utils/api";
 
 export default function ServiceForm({ existingService = null, onServiceCreated, onServiceUpdated, onServiceDeleted }) {
   const isEditing = Boolean(existingService);
@@ -25,8 +26,11 @@ export default function ServiceForm({ existingService = null, onServiceCreated, 
     });
   }
 
+  const [error, setError] = useState(null);
+
   function handleSubmit(event) {
     event.preventDefault();
+    setError(null);
 
     const url = isEditing ? `/api/v1/services/${existingService.id}` : "/api/v1/services";
 
@@ -41,12 +45,18 @@ export default function ServiceForm({ existingService = null, onServiceCreated, 
         },
       }),
     })
-      .then((res) => res.json())
-      .then((savedService) => {
+      .then(parseApiResponse)
+      .then(({ ok, data, error: apiError }) => {
+        if (!ok) {
+          const fieldErrors = extractFieldErrors(apiError.details);
+          setError(fieldErrors ? Object.values(fieldErrors).flat().join(', ') : apiError.message);
+          return;
+        }
+
         if (isEditing) {
-          onServiceUpdated?.(savedService);
+          onServiceUpdated?.(data);
         } else {
-          onServiceCreated?.(savedService);
+          onServiceCreated?.(data);
           setService(blankService);
         }
       });
