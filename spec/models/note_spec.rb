@@ -6,7 +6,9 @@ RSpec.describe Note, type: :model do
     account.users.create!(first_name: 'Jane', last_name: 'Doe', email: 'jane@example.com', role: 'owner',
                           password: 'password', password_confirmation: 'password')
   end
-  let(:client) { account.clients.create!(first_name: 'John', last_name: 'Client', email: 'john@example.com', user: user) }
+  let(:client) do
+    account.clients.create!(first_name: 'John', last_name: 'Client', email: 'john@example.com', user: user)
+  end
 
   it 'requires a body' do
     note = client.notes.new(user: user)
