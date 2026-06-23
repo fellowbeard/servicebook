@@ -38,7 +38,9 @@ class Api::V1::ClientsController < Api::V1::BaseController
   private
 
   def set_client
-    @client = current_account.clients.find(params[:id])
+    @client = current_account.clients
+                             .includes(:notes, appointments: [:services, :resource, :user])
+                             .find(params[:id])
   end
 
   def client_params
