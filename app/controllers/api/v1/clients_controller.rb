@@ -24,7 +24,7 @@ class Api::V1::ClientsController < Api::V1::BaseController
 
   def update
     if @client.update(client_params)
-      render json: ClientSerializer.new(@client).as_json
+      render json: ClientDetailSerializer.new(@client).as_json
     else
       render json: { errors: @client.errors.full_messages }, status: :unprocessable_entity
     end

@@ -4,6 +4,7 @@ class Account < ApplicationRecord
   has_many :appointments, dependent: :destroy
   has_many :resources, dependent: :destroy
   has_many :services, dependent: :destroy
+  has_many :notes, through: :clients
 
   validates :business_name, presence: true
 end

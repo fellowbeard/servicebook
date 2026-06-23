@@ -40,20 +40,20 @@ jane = User.create!(
   account: account_one,
   first_name: 'Jane',
   last_name: 'Stuff',
-  email: 'janestuff@example.com',
+  email: 'js@example.com',
   role: 'owner',
-  password: '123456',
-  password_confirmation: '123456'
+  password: '12',
+  password_confirmation: '12'
 )
 
 john = User.create!(
   account: account_two,
   first_name: 'John',
   last_name: 'Denver',
-  email: 'johndenver@example.com',
+  email: 'jd@example.com',
   role: 'owner',
-  password: '123456',
-  password_confirmation: '123456'
+  password: '12',
+  password_confirmation: '12'
 )
 
 User.create!(
@@ -62,8 +62,8 @@ User.create!(
   last_name: 'StaffReader',
   email: 'susettestaffreader@example.com',
   role: 'read_only',
-  password: '123456',
-  password_confirmation: '123456'
+  password: '12',
+  password_confirmation: '12'
 )
 
 # Clients

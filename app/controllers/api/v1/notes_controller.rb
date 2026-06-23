@@ -12,7 +12,9 @@ class Api::V1::NotesController < Api::V1::BaseController
   end
 
   def create
-    note = current_user.notes.new(note_params)
+    client = current_account.clients.find(note_params[:client_id])
+    note = client.notes.new(body: note_params[:body])
+    note.user = current_user
     if note.save
       render json: NoteSerializer.new(note).as_json, status: :created
     else
