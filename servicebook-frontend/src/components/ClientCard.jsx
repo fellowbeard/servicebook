@@ -8,7 +8,16 @@ export default function ClientCard({ currentUser }) {
   const navigate = useNavigate();
 
   const [client, setClient] = useState(null);
+  const [isEditingClient, setIsEditingClient] = useState(false);
+  const [clientForm, setClientForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+  });
   const [noteBody, setNoteBody] = useState("");
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [editingNoteBody, setEditingNoteBody] = useState("");
   const [editingAppointment, setEditingAppointment] = useState(null);
 
   const fetchClient = useCallback(() => {
@@ -16,7 +25,15 @@ export default function ClientCard({ currentUser }) {
       headers: authHeaders(),
     })
       .then((res) => res.json())
-      .then((data) => setClient(data));
+      .then((data) => {
+        setClient(data);
+        setClientForm({
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+        });
+      });
   }, [id]);
 
   useEffect(() => {
@@ -24,6 +41,30 @@ export default function ClientCard({ currentUser }) {
   }, [fetchClient]);
 
   if (!client) return <p>Loading client...</p>;
+
+  function handleClientChange(event) {
+    setClientForm({
+      ...clientForm,
+      [event.target.name]: event.target.value,
+    });
+  }
+
+  function handleUpdateClient(event) {
+    event.preventDefault();
+
+    fetch(`/api/v1/clients/${client.id}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        client: clientForm,
+      }),
+    })
+      .then((res) => res.json())
+      .then((updatedClient) => {
+        setClient(updatedClient);
+        setIsEditingClient(false);
+      });
+  }
 
   function handleCreateAppointment() {
     navigate(`/appointments/new?client_id=${client.id}`);
@@ -53,6 +94,35 @@ export default function ClientCard({ currentUser }) {
       });
   }
 
+  function startEditingNote(note) {
+    setEditingNoteId(note.id);
+    setEditingNoteBody(note.body);
+  }
+
+  function handleUpdateNote(event) {
+    event.preventDefault();
+
+    fetch(`/api/v1/notes/${editingNoteId}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        note: {
+          body: editingNoteBody,
+        },
+      }),
+    })
+      .then((res) => res.json())
+      .then((updatedNote) => {
+        setClient({
+          ...client,
+          notes: client.notes.map((note) => (note.id === updatedNote.id ? updatedNote : note)),
+        });
+
+        setEditingNoteId(null);
+        setEditingNoteBody("");
+      });
+  }
+
   function handleAppointmentUpdated() {
     setEditingAppointment(null);
     fetchClient();
@@ -60,9 +130,39 @@ export default function ClientCard({ currentUser }) {
 
   return (
     <section className="client-card">
-      <h2>
-        {client.first_name} {client.last_name}
-      </h2>
+      {isEditingClient ? (
+        <form onSubmit={handleUpdateClient}>
+          <label htmlFor="edit_first_name">First Name</label>
+          <input id="edit_first_name" name="first_name" value={clientForm.first_name} onChange={handleClientChange} />
+
+          <label htmlFor="edit_last_name">Last Name</label>
+          <input id="edit_last_name" name="last_name" value={clientForm.last_name} onChange={handleClientChange} />
+
+          <label htmlFor="edit_email">Email</label>
+          <input id="edit_email" name="email" type="email" value={clientForm.email} onChange={handleClientChange} />
+
+          <label htmlFor="edit_phone">Phone</label>
+          <input id="edit_phone" name="phone" value={clientForm.phone} onChange={handleClientChange} />
+
+          <button type="submit">Save Client</button>
+          <button type="button" onClick={() => setIsEditingClient(false)}>
+            Cancel
+          </button>
+        </form>
+      ) : (
+        <>
+          <h2>
+            {client.first_name} {client.last_name}
+          </h2>
+
+          <p>{client.email}</p>
+          <p>{client.phone}</p>
+
+          <button type="button" onClick={() => setIsEditingClient(true)}>
+            Edit Client
+          </button>
+        </>
+      )}
 
       <button onClick={handleCreateAppointment}>New Appointment</button>
 
@@ -123,18 +223,46 @@ export default function ClientCard({ currentUser }) {
       )}
 
       <h3>Notes</h3>
+
       <div>
         {client.notes?.length > 0 ? (
           client.notes.map((note) => (
             <div key={note.id}>
-              <p>{note.body}</p>
-              <small>
-                {new Date(note.created_at).toLocaleString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </small>
+              {editingNoteId === note.id ? (
+                <form onSubmit={handleUpdateNote}>
+                  <textarea value={editingNoteBody} onChange={(event) => setEditingNoteBody(event.target.value)} />
+
+                  <button type="submit">Save Note</button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingNoteId(null);
+                      setEditingNoteBody("");
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <p>{note.body}</p>
+
+                  <small>
+                    {new Date(note.created_at).toLocaleString("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </small>
+
+                  <div>
+                    <button type="button" onClick={() => startEditingNote(note)}>
+                      Edit Note
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           ))
         ) : (
@@ -142,8 +270,10 @@ export default function ClientCard({ currentUser }) {
         )}
       </div>
 
+      <h4>Add Note</h4>
+
       <form onSubmit={handleAddNote}>
-        <label htmlFor={`note-${client.id}`}> Add note </label>
+        <label htmlFor={`note-${client.id}`}>Add note</label>
 
         <textarea id={`note-${client.id}`} value={noteBody} onChange={(event) => setNoteBody(event.target.value)} />
 
