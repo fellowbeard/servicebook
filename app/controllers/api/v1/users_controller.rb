@@ -50,6 +50,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       appointments_count: appointments_scope.count,
       account: AccountSerializer.new(current_account).as_json,
       services: serialized_services,
+      resources: serialized_resources,
       clients: serialized_clients,
       recent_clients: serialized_recent_clients,
       appointments: serialized_appointments,
@@ -66,11 +67,19 @@ class Api::V1::UsersController < Api::V1::BaseController
   end
 
   def services_scope
-    current_user.services.alphabetical
+    current_account.services.alphabetical
   end
 
   def serialized_services
     services_scope.map { |service| ServiceSerializer.new(service).as_json }
+  end
+
+  def resources_scope
+    current_account.resources.order(:name)
+  end
+
+  def serialized_resources
+    resources_scope.map { |resource| resource.as_json(only: [:id, :name]) }
   end
 
   def serialized_clients

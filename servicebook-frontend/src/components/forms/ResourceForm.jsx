@@ -17,17 +17,22 @@ export default function ResourceForm({
     name: existingResource?.name || "",
   });
 
+  const [error, setError] = useState("");
+
   function handleChange(event) {
     setResource({
       ...resource,
       [event.target.name]: event.target.value,
     });
+
+    setError("");
   }
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
-    const url = isEditing ? `/api/v1/resources/${existingResource.id}` : "api/v1/resources";
+    const url = isEditing ? `/api/v1/resources/${existingResource.id}` : "/api/v1/resources";
 
     const method = isEditing ? "PATCH" : "POST";
 
@@ -38,12 +43,22 @@ export default function ResourceForm({
         resource,
       }),
     })
-      .then((res) => res.json())
-      .then((savedResource) => {
+      .then((res) => {
+        return res.json().then((data) => ({
+          ok: res.ok,
+          data,
+        }));
+      })
+      .then(({ ok, data }) => {
+        if (!ok) {
+          setError(data.errors?.join(", ") || "Resource could not be saved.");
+          return;
+        }
+
         if (isEditing) {
-          onResourceUpdated?.(savedResource);
+          onResourceUpdated?.(data);
         } else {
-          onResourceCreated?.(savedResource);
+          onResourceCreated?.(data);
           setResource(blankResource);
         }
       });
@@ -52,7 +67,7 @@ export default function ResourceForm({
   function handleDelete() {
     if (!existingResource) return;
 
-    fetch(`api/v1/resources/${existingResource.id}`, {
+    fetch(`/api/v1/resources/${existingResource.id}`, {
       method: "DELETE",
       headers: authHeaders(),
     }).then(() => {
@@ -73,6 +88,8 @@ export default function ResourceForm({
         onChange={handleChange}
         placeholder="Chair 1, Room A, Booth 2"
       />
+
+      {error && <p className="error">{error}</p>}
 
       <button type="submit">{isEditing ? "Update Resource" : "Save Resource"}</button>
 

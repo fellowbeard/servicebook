@@ -1,10 +1,9 @@
 class Api::V1::ServicesController < Api::V1::BaseController
-  before_action :require_current_user
   before_action :require_write_access, only: [:create, :update, :destroy]
   before_action :set_service, only: [:show, :update, :destroy]
 
   def index
-    services = Service.all
+    services = current_account.services.alphabetical
     render json: services.map { |service| ServiceSerializer.new(service).as_json }
   end
 
@@ -13,7 +12,9 @@ class Api::V1::ServicesController < Api::V1::BaseController
   end
 
   def create
-    service = current_user.services.new(service_params)
+    service = current_account.services.new(service_params)
+    service.user = current_user
+
     if service.save
       render json: ServiceSerializer.new(service).as_json, status: :created
     else

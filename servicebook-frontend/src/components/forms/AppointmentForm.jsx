@@ -65,7 +65,6 @@ export default function AppointmentForm({
 
   function saveAppointment(selectedClientId) {
     const url = isEditing ? `/api/v1/appointments/${existingAppointment.id}` : "/api/v1/appointments";
-
     const method = isEditing ? "PATCH" : "POST";
 
     return fetch(url, {
@@ -94,7 +93,6 @@ export default function AppointmentForm({
         body: JSON.stringify({
           client: {
             ...newClient,
-            user_id: currentUser.id,
           },
         }),
       })

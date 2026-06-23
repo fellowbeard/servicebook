@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { authHeaders } from "../../utils/auth.js";
 
-export default function ServiceForm({
-  currentUser,
-  existingService = null,
-  onServiceCreated,
-  onServiceUpdated,
-  onServiceDeleted,
-}) {
+export default function ServiceForm({ existingService = null, onServiceCreated, onServiceUpdated, onServiceDeleted }) {
   const isEditing = Boolean(existingService);
 
   const blankService = {
@@ -44,7 +38,6 @@ export default function ServiceForm({
       body: JSON.stringify({
         service: {
           ...service,
-          user_id: currentUser.id,
         },
       }),
     })
