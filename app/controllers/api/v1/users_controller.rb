@@ -21,7 +21,7 @@ class Api::V1::UsersController < Api::V1::BaseController
     if user.save
       render json: user, status: :created
     else
-      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(user)
     end
   end
 
@@ -29,7 +29,7 @@ class Api::V1::UsersController < Api::V1::BaseController
     if @user.update(user_params)
       render json: @user
     else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@user)
     end
   end
 

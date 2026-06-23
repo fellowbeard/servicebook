@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { authHeaders } from "../../utils/auth.js";
+import { apiFetch } from "../../utils/api.js";
 
 export default function NewClient() {
   const navigate = useNavigate();
@@ -12,6 +12,8 @@ export default function NewClient() {
     phone: "",
   });
 
+  const [error, setError] = useState("");
+
   function handleChange(event) {
     setClient({
       ...client,
@@ -22,24 +24,27 @@ export default function NewClient() {
   function handleSubmit(event) {
     event.preventDefault();
 
-    fetch("/api/v1/clients", {
+    apiFetch("/api/v1/clients", {
       method: "POST",
-      headers: authHeaders(),
       body: JSON.stringify({
         client: {
           ...client,
         },
       }),
     })
-      .then((res) => res.json())
       .then((createdClient) => {
         navigate(`/clients/${createdClient.id}`);
+      })
+      .catch((apiError) => {
+        setError(apiError.message);
       });
   }
 
   return (
     <main>
       <h1>New Client</h1>
+
+      {error && <p className="error">{error}</p>}
 
       <form onSubmit={handleSubmit}>
         <label htmlFor="first_name">First Name</label>

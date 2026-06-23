@@ -18,7 +18,7 @@ class Api::V1::AppointmentsController < Api::V1::BaseController
     if appointment.save
       render json: AppointmentSerializer.new(appointment).as_json, status: :created
     else
-      render json: { errors: appointment.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(appointment)
     end
   end
 
@@ -29,7 +29,7 @@ class Api::V1::AppointmentsController < Api::V1::BaseController
     if @appointment.save
       render json: AppointmentSerializer.new(@appointment).as_json
     else
-      render json: { errors: @appointment.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(appointment)
     end
   end
 

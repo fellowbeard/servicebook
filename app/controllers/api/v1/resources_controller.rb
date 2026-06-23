@@ -18,7 +18,7 @@ class Api::V1::ResourcesController < Api::V1::BaseController
     if resource.save
       render json: resource, status: :created
     else
-      render json: { errors: resource.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(resource)
     end
   end
 
@@ -26,7 +26,7 @@ class Api::V1::ResourcesController < Api::V1::BaseController
     if @resource.update(resource_params)
       render json: @resource
     else
-      render json: { errors: @resource.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@resource)
     end
   end
 

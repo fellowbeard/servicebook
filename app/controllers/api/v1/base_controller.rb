@@ -1,6 +1,9 @@
 class Api::V1::BaseController < ActionController::API
   before_action :require_current_user
 
+  rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
+  rescue_from ActionController::ParameterMissing, with: :render_bad_request
+
   private
 
   def current_user
@@ -16,7 +19,11 @@ class Api::V1::BaseController < ActionController::API
   def require_current_user
     return if current_user
 
-    render json: { error: 'Unauthorized' }, status: :unauthorized
+    render_error(
+      code: 'unauthorized',
+      message: 'You must be logged in to do that.',
+      status: :unauthorized
+    )
   end
 
   def current_account
@@ -26,12 +33,55 @@ class Api::V1::BaseController < ActionController::API
   def require_write_access
     return if current_user.can_write?
 
-    render json: { error: 'Read-only users cannot make changes.' }, status: :forbidden
+    render_error(
+      code: 'forbidden',
+      message: 'Read-only users cannot make changes.',
+      status: :forbidden
+    )
   end
 
   def require_owner
     return if current_user.owner?
 
-    render json: { error: 'Only account owners can do that.' }, status: :forbidden
+    render_error(
+      code: 'forbidden',
+      message: 'Only account owners can do that.',
+      status: :forbidden
+    )
+  end
+
+  def render_validation_errors(record)
+    render_error(
+      code: 'validation_failed',
+      message: 'Validation failed.',
+      status: :unprocessable_entity,
+      details: record.errors.to_hash(true)
+    )
+  end
+
+  def render_not_found(exception)
+    render_error(
+      code: 'not_found',
+      message: exception.message,
+      status: :not_found
+    )
+  end
+
+  def render_bad_request(exception)
+    render_error(
+      code: 'bad_request',
+      message: exception.message,
+      status: :bad_request
+    )
+  end
+
+  def render_error(code:, message:, status:, details: nil)
+    render json: {
+      error: {
+        code: code,
+        message: message,
+        details: details,
+      },
+    }, status: status
   end
 end

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import AppointmentForm from "./forms/AppointmentForm.jsx";
-import { authHeaders } from "../utils/auth.js";
+import { apiFetch } from "../utils/api.js";
 
 export default function ClientCard({ currentUser }) {
   const { id } = useParams();
@@ -19,12 +19,10 @@ export default function ClientCard({ currentUser }) {
   const [editingNoteId, setEditingNoteId] = useState(null);
   const [editingNoteBody, setEditingNoteBody] = useState("");
   const [editingAppointment, setEditingAppointment] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const fetchClient = useCallback(() => {
-    fetch(`/api/v1/clients/${id}`, {
-      headers: authHeaders(),
-    })
-      .then((res) => res.json())
+    apiFetch(`/api/v1/clients/${id}`)
       .then((data) => {
         setClient(data);
         setClientForm({
@@ -33,6 +31,9 @@ export default function ClientCard({ currentUser }) {
           email: data.email || "",
           phone: data.phone || "",
         });
+      })
+      .catch((error) => {
+        setErrorMessage(error.message);
       });
   }, [id]);
 
@@ -52,17 +53,19 @@ export default function ClientCard({ currentUser }) {
   function handleUpdateClient(event) {
     event.preventDefault();
 
-    fetch(`/api/v1/clients/${client.id}`, {
+    apiFetch(`/api/v1/clients/${client.id}`, {
       method: "PATCH",
-      headers: authHeaders(),
       body: JSON.stringify({
         client: clientForm,
       }),
     })
-      .then((res) => res.json())
       .then((updatedClient) => {
         setClient(updatedClient);
         setIsEditingClient(false);
+        setErrorMessage("");
+      })
+      .catch((error) => {
+        setErrorMessage(error.message);
       });
   }
 
@@ -73,9 +76,8 @@ export default function ClientCard({ currentUser }) {
   function handleAddNote(event) {
     event.preventDefault();
 
-    fetch("/api/v1/notes", {
+    apiFetch("/api/v1/notes", {
       method: "POST",
-      headers: authHeaders(),
       body: JSON.stringify({
         note: {
           client_id: client.id,
@@ -83,7 +85,6 @@ export default function ClientCard({ currentUser }) {
         },
       }),
     })
-      .then((res) => res.json())
       .then((newNote) => {
         setClient({
           ...client,
@@ -91,6 +92,10 @@ export default function ClientCard({ currentUser }) {
         });
 
         setNoteBody("");
+        setErrorMessage("");
+      })
+      .catch((error) => {
+        setErrorMessage(error.message);
       });
   }
 
@@ -102,16 +107,14 @@ export default function ClientCard({ currentUser }) {
   function handleUpdateNote(event) {
     event.preventDefault();
 
-    fetch(`/api/v1/notes/${editingNoteId}`, {
+    apiFetch(`/api/v1/notes/${editingNoteId}`, {
       method: "PATCH",
-      headers: authHeaders(),
       body: JSON.stringify({
         note: {
           body: editingNoteBody,
         },
       }),
     })
-      .then((res) => res.json())
       .then((updatedNote) => {
         setClient({
           ...client,
@@ -120,6 +123,10 @@ export default function ClientCard({ currentUser }) {
 
         setEditingNoteId(null);
         setEditingNoteBody("");
+        setErrorMessage("");
+      })
+      .catch((error) => {
+        setErrorMessage(error.message);
       });
   }
 
@@ -130,6 +137,8 @@ export default function ClientCard({ currentUser }) {
 
   return (
     <section className="client-card">
+      {errorMessage && <p className="error">{errorMessage}</p>}
+
       {isEditingClient ? (
         <form onSubmit={handleUpdateClient}>
           <label htmlFor="edit_first_name">First Name</label>
@@ -164,9 +173,12 @@ export default function ClientCard({ currentUser }) {
         </>
       )}
 
-      <button onClick={handleCreateAppointment}>New Appointment</button>
+      <button type="button" onClick={handleCreateAppointment}>
+        New Appointment
+      </button>
 
       <h3>Service History</h3>
+
       <div>
         {client.appointments?.length > 0 ? (
           [...client.appointments]
@@ -192,7 +204,7 @@ export default function ClientCard({ currentUser }) {
                 </div>
 
                 <div className="appointment-services">
-                  {appointment.services && appointment.services.length > 0 ? (
+                  {appointment.services?.length > 0 ? (
                     appointment.services.map((svc) => (
                       <div key={svc.id} className="service-entry">
                         <div className="service-title">{svc.title}</div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authHeaders } from "../../utils/auth";
+import { apiFetch } from "../../utils/api.js";
 
 export default function ResourceForm({
   existingResource = null,
@@ -33,47 +33,40 @@ export default function ResourceForm({
     setError("");
 
     const url = isEditing ? `/api/v1/resources/${existingResource.id}` : "/api/v1/resources";
-
     const method = isEditing ? "PATCH" : "POST";
 
-    fetch(url, {
+    apiFetch(url, {
       method,
-      headers: authHeaders(),
       body: JSON.stringify({
         resource,
       }),
     })
-      .then((res) => {
-        return res.json().then((data) => ({
-          ok: res.ok,
-          data,
-        }));
-      })
-      .then(({ ok, data }) => {
-        if (!ok) {
-          setError(data.errors?.join(", ") || "Resource could not be saved.");
-          return;
-        }
-
+      .then((savedResource) => {
         if (isEditing) {
-          onResourceUpdated?.(data);
+          onResourceUpdated?.(savedResource);
         } else {
-          onResourceCreated?.(data);
+          onResourceCreated?.(savedResource);
           setResource(blankResource);
         }
+      })
+      .catch((error) => {
+        setError(error.message || "Resource could not be saved.");
       });
   }
 
   function handleDelete() {
     if (!existingResource) return;
 
-    fetch(`/api/v1/resources/${existingResource.id}`, {
+    apiFetch(`/api/v1/resources/${existingResource.id}`, {
       method: "DELETE",
-      headers: authHeaders(),
-    }).then(() => {
-      onResourceDeleted?.(existingResource.id);
-      setResource(blankResource);
-    });
+    })
+      .then(() => {
+        onResourceDeleted?.(existingResource.id);
+        setResource(blankResource);
+      })
+      .catch((error) => {
+        setError(error.message || "Resource could not be deleted.");
+      });
   }
 
   return (

@@ -18,7 +18,7 @@ class Api::V1::NotesController < Api::V1::BaseController
     if note.save
       render json: NoteSerializer.new(note).as_json, status: :created
     else
-      render json: { errors: note.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(note)
     end
   end
 
@@ -26,7 +26,7 @@ class Api::V1::NotesController < Api::V1::BaseController
     if @note.update(note_params)
       render json: NoteSerializer.new(@note).as_json
     else
-      render json: { errors: @note.errors.full_messages }, status: :unprocessable_entity
+      render_validation_errors(@note)
     end
   end
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authHeaders } from "../../utils/auth.js";
+import { apiFetch } from "../../utils/api.js";
 
 export default function ServiceForm({ existingService = null, onServiceCreated, onServiceUpdated, onServiceDeleted }) {
   const isEditing = Boolean(existingService);
@@ -18,30 +18,31 @@ export default function ServiceForm({ existingService = null, onServiceCreated, 
     price: existingService?.price || "",
   });
 
+  const [error, setError] = useState("");
+
   function handleChange(event) {
     setService({
       ...service,
       [event.target.name]: event.target.value,
     });
+
+    setError("");
   }
 
   function handleSubmit(event) {
     event.preventDefault();
+    setError("");
 
     const url = isEditing ? `/api/v1/services/${existingService.id}` : "/api/v1/services";
 
     const method = isEditing ? "PATCH" : "POST";
 
-    fetch(url, {
+    apiFetch(url, {
       method,
-      headers: authHeaders(),
       body: JSON.stringify({
-        service: {
-          ...service,
-        },
+        service,
       }),
     })
-      .then((res) => res.json())
       .then((savedService) => {
         if (isEditing) {
           onServiceUpdated?.(savedService);
@@ -49,24 +50,32 @@ export default function ServiceForm({ existingService = null, onServiceCreated, 
           onServiceCreated?.(savedService);
           setService(blankService);
         }
+      })
+      .catch((error) => {
+        setError(error.message || "Service could not be saved.");
       });
   }
 
   function handleDelete() {
     if (!existingService) return;
 
-    fetch(`/api/v1/services/${existingService.id}`, {
+    apiFetch(`/api/v1/services/${existingService.id}`, {
       method: "DELETE",
-      headers: authHeaders(),
-    }).then(() => {
-      onServiceDeleted?.(existingService.id);
-      setService(blankService);
-    });
+    })
+      .then(() => {
+        onServiceDeleted?.(existingService.id);
+        setService(blankService);
+      })
+      .catch((error) => {
+        setError(error.message || "Service could not be deleted.");
+      });
   }
 
   return (
     <form onSubmit={handleSubmit}>
       <h3>{isEditing ? "Edit Service" : "New Service"}</h3>
+
+      {error && <p className="error">{error}</p>}
 
       <label htmlFor="service-title">Service Name</label>
       <input id="service-title" name="title" value={service.title} onChange={handleChange} />

@@ -9,7 +9,7 @@ class AppointmentSerializer
       user_id: @appointment.user_id,
       client_id: @appointment.client_id,
       resource_id: @appointment.resource_id,
-      client: ClientSerializer.new(@appointment.client).as_json,
+      client: serialized_client,
       resource: serialized_resource,
       scheduled_at: @appointment.scheduled_at.strftime('%Y-%m-%dT%H:%M:%S'),
       status: @appointment.status,
